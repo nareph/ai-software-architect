@@ -38,7 +38,7 @@ All artifacts are coherence-validated against each other before delivery.
 |---|---|
 | Framework | Next.js 16.2.9 (App Router, Turbopack) |
 | Language | TypeScript 5.x |
-| UI | React 19 + Tailwind CSS 4 + shadcn/ui |
+| UI | React 19 + Tailwind CSS 4 + shadcn/ui (Nova preset) |
 | Database | Neon PostgreSQL (serverless) |
 | ORM | Drizzle ORM |
 | Auth | NextAuth.js v5 |
@@ -68,12 +68,35 @@ See [ROADMAP.md](./ROADMAP.md) for the full roadmap.
 
 ---
 
+## ⚠️ Local development limitation
+
+Due to network restrictions on certain ISPs (particularly in some African regions), direct connections from Node.js to Neon PostgreSQL AWS endpoints may be blocked locally. This affects both `drizzle-kit` CLI commands and runtime database queries.
+
+**All database interactions work correctly when deployed on Vercel.**
+
+The recommended development workflow is:
+
+```
+Code locally → git push → Vercel auto-deploys → test on preview URL
+```
+
+For database schema changes:
+1. Run `pnpm db:generate` locally (no network needed — local diff only)
+2. Paste the generated SQL from `drizzle/migrations/` into the [Neon SQL Editor](https://console.neon.tech), **or** push from an environment with unrestricted network access
+
+---
+
 ## Getting started
 
 ### Prerequisites
 
 - Node.js ≥ 20.9.0
 - pnpm 9.x
+- A [Vercel](https://vercel.com) account
+- A [Neon](https://neon.tech) PostgreSQL database
+- A [Google AI Studio](https://aistudio.google.com) API key (free tier)
+- A [DeepSeek Platform](https://platform.deepseek.com) API key
+- An [Upstash](https://upstash.com) Redis instance
 
 ### Installation
 
@@ -88,38 +111,51 @@ pnpm install
 # Set up environment variables
 cp .env.example .env.local
 # → Fill in your keys (see docs/04-mvp/getting-started.md)
-
-# Run database migrations
-pnpm db:migrate
-
-# Start the dev server
-pnpm dev
 ```
 
-App available at [http://localhost:3000](http://localhost:3000).
+### Deploy to Vercel
 
-For the full setup guide (Neon, Gemini API key, Upstash, Vercel deployment), see [docs/04-mvp/getting-started.md](./docs/04-mvp/getting-started.md).
+```bash
+# Link to Vercel (first time only)
+pnpm vercel link
+
+# Add environment variables (run each and follow prompts)
+pnpm vercel env add NEXTAUTH_URL        # https://your-app.vercel.app
+pnpm vercel env add NEXTAUTH_SECRET     # openssl rand -base64 32
+pnpm vercel env add DATABASE_URL        # from Neon dashboard
+pnpm vercel env add GEMINI_API_KEY      # from Google AI Studio
+pnpm vercel env add DEEPSEEK_API_KEY    # from DeepSeek Platform
+pnpm vercel env add UPSTASH_REDIS_REST_URL
+pnpm vercel env add UPSTASH_REDIS_REST_TOKEN
+
+# Deploy to production
+pnpm vercel deploy --prod
+```
+
+Every push to `main` triggers an automatic Vercel deployment.
+
+For the full setup guide, see [docs/04-mvp/getting-started.md](./docs/04-mvp/getting-started.md).
 
 ---
 
 ## Available scripts
 
 ```bash
-pnpm dev          # Start dev server (Turbopack)
+pnpm dev          # Start dev server (Turbopack) — UI only, no DB locally
 pnpm build        # Production build
 pnpm start        # Start production server
 pnpm lint         # ESLint
 pnpm type-check   # TypeScript check (no emit)
-pnpm db:generate  # Generate Drizzle migrations
-pnpm db:migrate   # Apply migrations
-pnpm db:studio    # Open Drizzle Studio
+pnpm db:generate  # Generate Drizzle migrations (local, no network needed)
+pnpm db:push      # Push schema to Neon (requires unrestricted network)
+pnpm db:studio    # Open Drizzle Studio (requires unrestricted network)
 ```
 
 ---
 
 ## Documentation
 
-The full documentation lives in [`docs/`](./docs/README.md) :
+The full documentation lives in [`docs/`](./docs/README.md):
 
 | Section | Description |
 |---|---|
@@ -135,8 +171,8 @@ The full documentation lives in [`docs/`](./docs/README.md) :
 
 ```
 ┌─────────────────────────────────────────────┐
-│             Next.js 16 (App Router)         │
-│        Frontend · API Routes · SSE          │
+│              Next.js 16 (App Router)         │
+│         Frontend · API Routes · SSE          │
 └─────────────────┬───────────────────────────┘
                   │
      ┌────────────┼────────────┐
