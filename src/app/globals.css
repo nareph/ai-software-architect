@@ -1,26 +1,134 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Expose CSS vars to Tailwind utilities */
+  --color-background:           var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-background-tertiary:  var(--background-tertiary);
+  --color-surface:              var(--surface);
+  --color-surface-hover:        var(--surface-hover);
+  --color-surface-active:       var(--surface-active);
+  --color-border:               var(--border);
+  --color-border-strong:        var(--border-strong);
+  --color-foreground:           var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-tertiary:  var(--foreground-tertiary);
+  --color-brand:                var(--brand);
+  --color-brand-hover:          var(--brand-hover);
+  --color-brand-foreground:     var(--brand-foreground);
+  --color-brand-muted:          var(--brand-muted);
+  --color-brand-muted-fg:       var(--brand-muted-fg);
+  --color-success:              var(--success);
+  --color-warning:              var(--warning);
+  --color-danger:               var(--danger);
+  --color-info:                 var(--info);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ══════════════════════════════
+   Light mode (default)
+══════════════════════════════ */
+:root {
+  --background:           #ffffff;
+  --background-secondary: #F8FAFC;
+  --background-tertiary:  #F1F5F9;
+  --surface:              #ffffff;
+  --surface-hover:        #F8FAFC;
+  --surface-active:       #EEF2FF;
+  --border:               #E2E8F0;
+  --border-strong:        #CBD5E1;
+  --foreground:           #0F172A;
+  --foreground-secondary: #475569;
+  --foreground-tertiary:  #94A3B8;
+  --foreground-inverse:   #F8FAFC;
+  --brand:                #6366F1;
+  --brand-hover:          #4F46E5;
+  --brand-foreground:     #ffffff;
+  --brand-muted:          #EEF2FF;
+  --brand-muted-fg:       #4338CA;
+  --success:              #10B981;
+  --success-muted:        #ECFDF5;
+  --warning:              #F59E0B;
+  --warning-muted:        #FFFBEB;
+  --danger:               #EF4444;
+  --danger-muted:         #FEF2F2;
+  --info:                 #3B82F6;
+  --info-muted:           #EFF6FF;
+}
+
+/* ══════════════════════════════
+   Dark mode — triggered by .dark on <html>
+══════════════════════════════ */
+.dark {
+  --background:           #0F172A;
+  --background-secondary: #1E293B;
+  --background-tertiary:  #0D1422;
+  --surface:              #1E293B;
+  --surface-hover:        #263548;
+  --surface-active:       #1E1B4B;
+  --border:               #1E293B;
+  --border-strong:        #334155;
+  --foreground:           #F1F5F9;
+  --foreground-secondary: #94A3B8;
+  --foreground-tertiary:  #475569;
+  --foreground-inverse:   #0F172A;
+  --brand:                #818CF8;
+  --brand-hover:          #6366F1;
+  --brand-foreground:     #ffffff;
+  --brand-muted:          #1E1B4B;
+  --brand-muted-fg:       #A5B4FC;
+  --success:              #34D399;
+  --success-muted:        #022C22;
+  --warning:              #FBBF24;
+  --warning-muted:        #1C1400;
+  --danger:               #F87171;
+  --danger-muted:         #2D0A0A;
+  --info:                 #60A5FA;
+  --info-muted:           #0D1F3C;
+}
+
+/* ══════════════════════════════
+   Base styles
+══════════════════════════════ */
+html {
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+::selection {
+  background-color: var(--brand-muted);
+  color: var(--brand-muted-fg);
+}
+
+* {
+  transition-property: color, background-color, border-color, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+/* ══════════════════════════════
+   Scrollbar (dark mode)
+══════════════════════════════ */
+.dark ::-webkit-scrollbar { width: 6px; height: 6px; }
+.dark ::-webkit-scrollbar-track { background: var(--background-tertiary); }
+.dark ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: var(--foreground-tertiary); }
