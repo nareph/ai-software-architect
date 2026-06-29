@@ -1,18 +1,22 @@
+// src/app/[locale]/(app)/dashboard/page.tsx
 import { auth } from '@/lib/auth/config'
 import { db } from '@/lib/db'
 import { projects, artifacts } from '@/lib/db/schema'
-import { eq, and, ne, count, sql } from 'drizzle-orm'
+import { eq, and, ne, sql } from 'drizzle-orm'
 import { redirect } from 'next/navigation'
+import { getLocale, getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { Plus, FolderOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ProjectCard } from '@/components/project/ProjectCard'
 import { DashboardClient } from './DashboardClient'
 
-export const metadata = { title: 'Dashboard' }
+export async function generateMetadata() {
+  const t = await getTranslations('nav')
+  return { title: t('dashboard') }
+}
 
 async function getUserProjects(userId: string) {
-  const rows = await db
+  return db
     .select({
       id: projects.id,
       name: projects.name,
@@ -26,24 +30,20 @@ async function getUserProjects(userId: string) {
     })
     .from(projects)
     .leftJoin(artifacts, eq(artifacts.projectId, projects.id))
-    .where(
-      and(
-        eq(projects.userId, userId),
-        ne(projects.status, 'archived')
-      )
-    )
+    .where(and(eq(projects.userId, userId), ne(projects.status, 'archived')))
     .groupBy(projects.id)
     .orderBy(sql`${projects.updatedAt} desc`)
-
-  return rows
 }
 
 export default async function DashboardPage() {
   const session = await auth()
-  if (!session) redirect('/signin')
+  const locale = await getLocale()
+  const t = await getTranslations('dashboard')
+
+  if (!session) redirect(`/${locale}/signin`)
 
   const userProjects = await getUserProjects(session.user.id)
-  const firstName = session.user.name?.split(' ')[0] ?? 'là'
+  const firstName = session.user.name?.split(' ')[0] ?? ''
 
   return (
     <div className="flex flex-col flex-1 px-8 py-8 max-w-6xl w-full mx-auto">
@@ -51,23 +51,20 @@ export default async function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1
-            className="text-2xl font-semibold mb-1"
-            style={{ color: 'var(--foreground)' }}
-          >
-            Bonjour, {firstName} 👋
+          <h1 className="text-2xl font-semibold mb-1" style={{ color: 'var(--foreground)' }}>
+            {t('greeting', { name: firstName })}
           </h1>
           <p className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
             {userProjects.length === 0
-              ? 'Créez votre premier projet pour commencer.'
-              : `${userProjects.length} projet${userProjects.length > 1 ? 's' : ''} en cours.`}
+              ? t('emptySubtitle')
+              : t('projectsCount', { count: userProjects.length })
+            }
           </p>
         </div>
-
-        <Link href="/projects/new">
+        <Link href={`/${locale}/projects/new`}>
           <Button className="gap-2">
             <Plus className="w-4 h-4" />
-            Nouveau projet
+            {t('newProject')}
           </Button>
         </Link>
       </div>
@@ -86,22 +83,21 @@ export default async function DashboardPage() {
           </div>
           <div className="text-center">
             <p className="font-medium mb-1" style={{ color: 'var(--foreground)' }}>
-              Aucun projet pour l'instant
+              {t('emptyState.title')}
             </p>
             <p className="text-sm" style={{ color: 'var(--foreground-secondary)' }}>
-              Décrivez votre idée et laissez l'IA générer l'architecture complète.
+              {t('emptyState.subtitle')}
             </p>
           </div>
-          <Link href="/projects/new">
+          <Link href={`/${locale}/projects/new`}>
             <Button className="gap-2 mt-2">
               <Plus className="w-4 h-4" />
-              Créer mon premier projet
+              {t('emptyState.cta')}
             </Button>
           </Link>
         </div>
       )}
 
-      {/* Projects grid */}
       {userProjects.length > 0 && (
         <DashboardClient projects={userProjects} />
       )}

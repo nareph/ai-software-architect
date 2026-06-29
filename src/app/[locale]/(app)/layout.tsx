@@ -1,14 +1,14 @@
+// src/app/[locale]/(app)/layout.tsx
 import { auth } from '@/lib/auth/config'
 import { redirect } from 'next/navigation'
+import { getLocale } from 'next-intl/server'
 import { Sidebar } from '@/components/layout/Sidebar'
 
-export default async function AppLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
-  if (!session) redirect('/signin')
+  const locale = await getLocale()
+
+  if (!session) redirect(`/${locale}/signin`)
 
   return (
     <div className="flex min-h-screen">

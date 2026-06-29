@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { List, LayoutGrid } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProjectCard } from '@/components/project/ProjectCard'
@@ -21,6 +22,7 @@ interface Project {
 }
 
 export function DashboardClient({ projects }: { projects: Project[] }) {
+  const t = useTranslations('dashboard')
   const [showAll, setShowAll] = useState(false)
   const [view, setView] = useState<'grid' | 'list'>('grid')
 
@@ -32,7 +34,10 @@ export function DashboardClient({ projects }: { projects: Project[] }) {
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-5">
         <p className="text-sm font-medium" style={{ color: 'var(--foreground-secondary)' }}>
-          {showAll ? `${projects.length} projets` : `${displayed.length} projets récents`}
+          {showAll
+            ? t('allProjects', { count: projects.length })
+            : t('recentProjects', { count: displayed.length })
+          }
         </p>
         <div
           className="flex items-center gap-1 p-1 rounded-lg border"
@@ -99,7 +104,10 @@ export function DashboardClient({ projects }: { projects: Project[] }) {
               else setView('list')
             }}
           >
-            {showAll ? 'Réduire' : `Voir tous les ${projects.length} projets`}
+            {showAll
+              ? t('collapse')
+              : t('viewAll', { count: projects.length })
+            }
           </Button>
         </div>
       )}

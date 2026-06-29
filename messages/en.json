@@ -1,0 +1,233 @@
+{
+  "common": {
+    "appName": "AI Software Architect",
+    "appTagline": "Transform a business description into a complete software architecture in under 5 minutes.",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "open": "Open",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "confirm": "Confirm",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "download": "Download",
+    "share": "Share",
+    "settings": "Settings",
+    "logout": "Sign out",
+    "theme": "Theme",
+    "comingSoon": "Coming soon"
+  },
+
+  "nav": {
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "documentation": "Documentation",
+    "newProject": "New project"
+  },
+
+  "landing": {
+    "badge": "MVP — Beta",
+    "hero": {
+      "title": "Architecture decisions {highlight} the first line of code",
+      "titleHighlight": "before",
+      "subtitle": "Describe your project in plain text. Get a complete, coherent software architecture in under 5 minutes — ready for your team to build from.",
+      "ctaPrimary": "Generate my architecture",
+      "ctaSecondary": "Sign in"
+    },
+    "artifacts": {
+      "sectionTitle": "WHAT GETS GENERATED",
+      "businessAnalysis": {
+        "label": "Business Analysis",
+        "desc": "Actors, features, business rules"
+      },
+      "architecture": {
+        "label": "Architecture",
+        "desc": "Stack, modules, patterns, risks"
+      },
+      "databaseSchema": {
+        "label": "Database Schema",
+        "desc": "Tables, relations, indexes"
+      },
+      "diagrams": {
+        "label": "Mermaid Diagrams",
+        "desc": "C4, sequence, ERD"
+      },
+      "backlog": {
+        "label": "Dev Backlog",
+        "desc": "Epics, stories, story points"
+      }
+    },
+    "footer": {
+      "builtBy": "Built by"
+    }
+  },
+
+  "auth": {
+    "signin": {
+      "title": "Sign in",
+      "subtitle": "Access your AI Software Architect workspace",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "submitButton": "Sign in",
+      "submitLoading": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Create account",
+      "invalidCredentials": "Invalid email or password",
+      "serverError": "Unable to reach the server. Please try again."
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Start generating software architectures",
+      "nameLabel": "Full name",
+      "namePlaceholder": "John Doe",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "••••••••",
+      "submitButton": "Create account",
+      "submitLoading": "Creating...",
+      "alreadyAccount": "Already have an account?",
+      "signinLink": "Sign in",
+      "passwordMismatch": "Passwords do not match",
+      "emailConflict": "This email is already in use",
+      "serverError": "An error occurred. Please try again."
+    }
+  },
+
+  "dashboard": {
+    "greeting": "Hello, {name} 👋",
+    "emptySubtitle": "Create your first project to get started.",
+    "projectsCount": "{count, plural, one {# project in progress} other {# projects in progress}}",
+    "newProject": "New project",
+    "emptyState": {
+      "title": "No projects yet",
+      "subtitle": "Describe your idea and let AI generate the complete architecture.",
+      "cta": "Create my first project"
+    },
+    "recentProjects": "{count} recent projects",
+    "allProjects": "{count} projects",
+    "viewAll": "View all {count} projects",
+    "collapse": "Collapse"
+  },
+
+  "project": {
+    "status": {
+      "draft": "Draft",
+      "generating": "Generating...",
+      "completed": "Completed",
+      "partial": "Incomplete",
+      "archived": "Archived"
+    },
+    "template": {
+      "saas": "SaaS",
+      "ecommerce": "E-commerce",
+      "marketplace": "Marketplace",
+      "mobile": "Mobile",
+      "api": "API",
+      "legacy": "Migration",
+      "custom": "Custom"
+    },
+    "artifacts": "{completed}/{total} artifacts",
+    "updatedAt": "Updated {time}"
+  },
+
+  "newProject": {
+    "title": "New project",
+    "subtitle": "Describe your idea — AI generates the complete architecture.",
+    "description": {
+      "label": "Project description",
+      "required": "(required)",
+      "placeholder": "Describe your project in detail. For example:\n\n\"I want to create a booking platform for a gym. Users can view available slots, book a class, pay online and cancel. The app must handle multiple roles: admin, coach and member.\"",
+      "wordCount": "{count}/{target} words",
+      "tooShort": "Description must contain at least {min} words"
+    },
+    "template": {
+      "label": "Template",
+      "optional": "(optional)",
+      "none": "No template",
+      "noneDesc": "Free description",
+      "saasDesc": "B2B/B2C web application",
+      "ecommerceDesc": "Online store",
+      "marketplaceDesc": "Multi-vendor platform",
+      "mobileDesc": "iOS/Android application",
+      "apiDesc": "B2B SaaS / API platform",
+      "legacyDesc": "Legacy system migration"
+    },
+    "constraints": {
+      "label": "Additional constraints",
+      "optional": "(optional)",
+      "placeholder": "E.g.: Max cloud budget $200/month. Must support 10,000 concurrent users. Node.js stack required.",
+      "maxChars": "{count}/500"
+    },
+    "submit": {
+      "button": "Generate my architecture",
+      "loading": "Creating...",
+      "estimatedTime": "Generation takes about 2 minutes."
+    },
+    "errors": {
+      "planLimit": "You have reached the 10 project limit on the free plan.",
+      "unauthorized": "Session expired. Please sign in again.",
+      "serverError": "An error occurred. Please try again."
+    }
+  },
+
+  "generation": {
+    "title": {
+      "connecting": "Connecting to pipeline...",
+      "running": "Generating",
+      "completed": "Architecture generated!",
+      "failed": "Generation error"
+    },
+    "subtitle": {
+      "connecting": "Initializing AI agents...",
+      "running": "{completed}/{total} artifacts generated",
+      "completed": "Redirecting to your results...",
+      "failed": "Something went wrong during generation."
+    },
+    "progress": {
+      "inProgress": "In progress...",
+      "done": "Done"
+    },
+    "steps": {
+      "business_analysis": "Business Analysis",
+      "architecture": "Architecture",
+      "database_schema": "Database Schema",
+      "diagrams": "Mermaid Diagrams",
+      "backlog": "Development Backlog"
+    },
+    "stepStatus": {
+      "running": "Generating...",
+      "failed": "Failed — you can retry this step"
+    },
+    "coherence": {
+      "passed": "✓ Global coherence verified"
+    },
+    "duration": "Generated in {seconds} seconds",
+    "error": {
+      "connectionLost": "Server connection lost. Please retry.",
+      "unexpected": "An unexpected error occurred during generation."
+    },
+    "actions": {
+      "backToDashboard": "Back to dashboard",
+      "retry": "Retry"
+    }
+  },
+
+  "errors": {
+    "notFound": "Page not found",
+    "notFoundDesc": "The page you are looking for does not exist.",
+    "unauthorized": "Unauthorized",
+    "serverError": "Server error",
+    "backHome": "Back to home"
+  }
+}

@@ -1,0 +1,233 @@
+{
+  "common": {
+    "appName": "AI Software Architect",
+    "appTagline": "Transform a business description into a complete software architecture in under 5 minutes.",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "open": "Ouvrir",
+    "back": "Retour",
+    "next": "Suivant",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "download": "Télécharger",
+    "share": "Partager",
+    "settings": "Paramètres",
+    "logout": "Se déconnecter",
+    "theme": "Thème",
+    "comingSoon": "Bientôt disponible"
+  },
+
+  "nav": {
+    "dashboard": "Dashboard",
+    "settings": "Paramètres",
+    "documentation": "Documentation",
+    "newProject": "Nouveau projet"
+  },
+
+  "landing": {
+    "badge": "MVP — Beta",
+    "hero": {
+      "title": "Architecture decisions {highlight} the first line of code",
+      "titleHighlight": "before",
+      "subtitle": "Describe your project in plain text. Get a complete, coherent software architecture in under 5 minutes — ready for your team to build from.",
+      "ctaPrimary": "Generate my architecture",
+      "ctaSecondary": "Sign in"
+    },
+    "artifacts": {
+      "sectionTitle": "WHAT GETS GENERATED",
+      "businessAnalysis": {
+        "label": "Business Analysis",
+        "desc": "Actors, features, business rules"
+      },
+      "architecture": {
+        "label": "Architecture",
+        "desc": "Stack, modules, patterns, risks"
+      },
+      "databaseSchema": {
+        "label": "Database Schema",
+        "desc": "Tables, relations, indexes"
+      },
+      "diagrams": {
+        "label": "Mermaid Diagrams",
+        "desc": "C4, sequence, ERD"
+      },
+      "backlog": {
+        "label": "Dev Backlog",
+        "desc": "Epics, stories, story points"
+      }
+    },
+    "footer": {
+      "builtBy": "Built by"
+    }
+  },
+
+  "auth": {
+    "signin": {
+      "title": "Connexion",
+      "subtitle": "Accédez à votre espace AI Software Architect",
+      "emailLabel": "Email",
+      "emailPlaceholder": "vous@exemple.com",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "••••••••",
+      "submitButton": "Se connecter",
+      "submitLoading": "Connexion...",
+      "noAccount": "Pas encore de compte ?",
+      "registerLink": "Créer un compte",
+      "invalidCredentials": "Email ou mot de passe incorrect",
+      "serverError": "Impossible de joindre le serveur. Réessaie."
+    },
+    "register": {
+      "title": "Créer un compte",
+      "subtitle": "Commencez à générer vos architectures logicielles",
+      "nameLabel": "Nom complet",
+      "namePlaceholder": "John Doe",
+      "emailLabel": "Email",
+      "emailPlaceholder": "vous@exemple.com",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "••••••••",
+      "confirmPasswordLabel": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "••••••••",
+      "submitButton": "Créer mon compte",
+      "submitLoading": "Création...",
+      "alreadyAccount": "Déjà un compte ?",
+      "signinLink": "Se connecter",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "emailConflict": "Cet email est déjà utilisé",
+      "serverError": "Une erreur est survenue. Réessayez."
+    }
+  },
+
+  "dashboard": {
+    "greeting": "Bonjour, {name} 👋",
+    "emptySubtitle": "Créez votre premier projet pour commencer.",
+    "projectsCount": "{count, plural, one {# projet en cours} other {# projets en cours}}",
+    "newProject": "Nouveau projet",
+    "emptyState": {
+      "title": "Aucun projet pour l'instant",
+      "subtitle": "Décrivez votre idée et laissez l'IA générer l'architecture complète.",
+      "cta": "Créer mon premier projet"
+    },
+    "recentProjects": "{count} projets récents",
+    "allProjects": "{count} projets",
+    "viewAll": "Voir tous les {count} projets",
+    "collapse": "Réduire"
+  },
+
+  "project": {
+    "status": {
+      "draft": "Brouillon",
+      "generating": "En cours...",
+      "completed": "Terminé",
+      "partial": "Incomplet",
+      "archived": "Archivé"
+    },
+    "template": {
+      "saas": "SaaS",
+      "ecommerce": "E-commerce",
+      "marketplace": "Marketplace",
+      "mobile": "Mobile",
+      "api": "API",
+      "legacy": "Migration",
+      "custom": "Custom"
+    },
+    "artifacts": "{completed}/{total} artefacts",
+    "updatedAt": "Mis à jour {time}"
+  },
+
+  "newProject": {
+    "title": "Nouveau projet",
+    "subtitle": "Décrivez votre idée — l'IA génère l'architecture complète.",
+    "description": {
+      "label": "Description du projet",
+      "required": "(requis)",
+      "placeholder": "Décrivez votre projet en détail. Par exemple :\n\n\"Je veux créer une plateforme de réservation pour des salles de sport. Les utilisateurs peuvent consulter les créneaux disponibles, réserver un cours, payer en ligne et annuler. L'application doit gérer plusieurs rôles : administrateur, coach et membre.\"",
+      "wordCount": "{count}/{target} mots",
+      "tooShort": "La description doit contenir au moins {min} mots"
+    },
+    "template": {
+      "label": "Template",
+      "optional": "(optionnel)",
+      "none": "Aucun template",
+      "noneDesc": "Description libre",
+      "saasDesc": "Application web B2B/B2C",
+      "ecommerceDesc": "Boutique en ligne",
+      "marketplaceDesc": "Plateforme multi-vendeurs",
+      "mobileDesc": "Application iOS/Android",
+      "apiDesc": "SaaS B2B / API platform",
+      "legacyDesc": "Refonte système existant"
+    },
+    "constraints": {
+      "label": "Contraintes additionnelles",
+      "optional": "(optionnel)",
+      "placeholder": "Ex: Budget cloud max 200€/mois. Doit supporter 10 000 utilisateurs simultanés. Stack Node.js obligatoire.",
+      "maxChars": "{count}/500"
+    },
+    "submit": {
+      "button": "Générer mon architecture",
+      "loading": "Création...",
+      "estimatedTime": "La génération prend environ 2 minutes."
+    },
+    "errors": {
+      "planLimit": "Vous avez atteint la limite de 10 projets sur le plan gratuit.",
+      "unauthorized": "Session expirée. Reconnectez-vous.",
+      "serverError": "Une erreur est survenue. Réessayez."
+    }
+  },
+
+  "generation": {
+    "title": {
+      "connecting": "Connexion au pipeline...",
+      "running": "Génération en cours",
+      "completed": "Architecture générée !",
+      "failed": "Erreur de génération"
+    },
+    "subtitle": {
+      "connecting": "Initialisation des agents IA...",
+      "running": "{completed}/{total} artefacts générés",
+      "completed": "Redirection vers vos résultats...",
+      "failed": "Un problème est survenu pendant la génération."
+    },
+    "progress": {
+      "inProgress": "En cours...",
+      "done": "Terminé"
+    },
+    "steps": {
+      "business_analysis": "Analyse métier",
+      "architecture": "Architecture",
+      "database_schema": "Schéma de base de données",
+      "diagrams": "Diagrammes Mermaid",
+      "backlog": "Backlog de développement"
+    },
+    "stepStatus": {
+      "running": "Génération en cours...",
+      "failed": "Échec — vous pouvez relancer cette étape"
+    },
+    "coherence": {
+      "passed": "✓ Cohérence globale vérifiée"
+    },
+    "duration": "Généré en {seconds} secondes",
+    "error": {
+      "connectionLost": "La connexion au serveur a été interrompue. Réessayez.",
+      "unexpected": "Une erreur inattendue est survenue pendant la génération."
+    },
+    "actions": {
+      "backToDashboard": "Retour au dashboard",
+      "retry": "Réessayer"
+    }
+  },
+
+  "errors": {
+    "notFound": "Page introuvable",
+    "notFoundDesc": "La page que vous cherchez n'existe pas.",
+    "unauthorized": "Accès non autorisé",
+    "serverError": "Erreur serveur",
+    "backHome": "Retour à l'accueil"
+  }
+}
