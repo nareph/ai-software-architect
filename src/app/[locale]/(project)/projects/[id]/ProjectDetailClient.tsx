@@ -56,7 +56,7 @@ export function ProjectDetailClient({ project }: { project: Project }) {
           coherenceScore={globalCoherence}
         />
 
-        <div className="flex-1 overflow-y-auto px-7 py-6 max-w-4xl w-full">
+        <div className="flex-1 overflow-y-auto px-7 py-6 max-w-6xl w-full mx-auto">
           {!activeArtifact || activeArtifact.status !== 'completed' ? (
             <div className="flex items-center justify-center h-64">
               <p className="text-sm" style={{ color: 'var(--foreground-tertiary)' }}>
