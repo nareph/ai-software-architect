@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { signOut } from 'next-auth/react'
-import { LayoutDashboard, Settings, LogOut, ChevronDown } from 'lucide-react'
+import { LayoutDashboard, Settings, LogOut, ChevronDown, BookOpen, ExternalLink } from 'lucide-react'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import { useState } from 'react'
@@ -13,6 +13,8 @@ import { useState } from 'react'
 interface SidebarProps {
   user: { name?: string | null; email?: string | null }
 }
+
+const GITBOOK_URL = 'https://ai-software-architect.gitbook.io/ai-software-architect/'
 
 const Logo = () => (
   <svg width="28" height="28" viewBox="0 0 64 64" fill="none">
@@ -38,7 +40,7 @@ export function Sidebar({ user }: SidebarProps) {
   const tCommon = useTranslations('common')
   const [userMenuOpen, setUserMenuOpen] = useState(false)
 
-  const navItems = [
+  const internalNavItems = [
     { href: `/${locale}/dashboard`, icon: LayoutDashboard, label: t('dashboard') },
     { href: `/${locale}/dashboard/settings`, icon: Settings, label: t('settings') },
   ]
@@ -62,7 +64,7 @@ export function Sidebar({ user }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map(({ href, icon: Icon, label }) => {
+        {internalNavItems.map(({ href, icon: Icon, label }) => {
           const active = pathname === href
           return (
             <Link
@@ -79,6 +81,22 @@ export function Sidebar({ user }: SidebarProps) {
             </Link>
           )
         })}
+
+        {/* Separator */}
+        <div className="my-2 border-t" style={{ borderColor: 'var(--border)' }} />
+
+        {/* External — Documentation (GitBook) */}
+        <a
+          href={GITBOOK_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--surface-hover)]"
+          style={{ color: 'var(--foreground-secondary)' }}
+        >
+          <BookOpen className="w-4 h-4 shrink-0" />
+          <span className="flex-1">{t('documentation')}</span>
+          <ExternalLink className="w-3 h-3 shrink-0 opacity-50" />
+        </a>
       </nav>
 
       {/* Bottom */}

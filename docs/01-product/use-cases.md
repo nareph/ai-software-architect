@@ -1,136 +1,99 @@
-# AI Software Architect - Use Cases
+# Use Cases
 
-## Contexte
+## Context
 
-Ces cas d'utilisation décrivent des scénarios typiques où AI Software Architect est utilisé. Chaque cas suit le même flux : saisie utilisateur → analyse → génération des artefacts.
+These use cases describe typical scenarios where AI Software Architect is used. Each case follows the same flow: user input → analysis → artifact generation.
 
 ---
 
-## Cas 1 : SaaS de réservation (ex: salle de sport, co-working)
+## Case 1: Booking SaaS (e.g. gym, co-working)
 
-**Description :** Un entrepreneur veut créer une plateforme de réservation pour des salles de sport. Les utilisateurs peuvent consulter les créneaux disponibles, réserver un cours, payer en ligne et annuler.
+**Description:** An entrepreneur wants to create a booking platform for gyms. Users can view available slots, book a class, pay online, and cancel.
 
-**Spécificités :**
-- Multi-rôles : administrateur, coach, membre
-- Gestion des abonnements (mensuel, annuel)
-- Paiement en ligne (Stripe)
+**Specifics:**
+- Multi-role: administrator, coach, member
+- Subscription management (monthly, annual)
+- Online payment (Stripe)
 - Notifications (email, SMS)
-- Disponible en mobile et desktop
+- Available on mobile and desktop
 
-**Artefacts attendus :**
-- Analyse métier : acteurs, fonctionnalités, règles de gestion
-- Architecture : API REST, BDD PostgreSQL, Redis pour les sessions, microservice notifications
-- Schéma DB : tables `users`, `roles`, `subscriptions`, `bookings`, `schedules`, `payments`
-- Diagrammes : C4 niveau 2 (conteneurs)
-- Backlog : 10 user stories (ex: "En tant que membre, je veux voir les créneaux disponibles")
-
----
-
-## Cas 2 : E-commerce (vente de produits physiques)
-
-**Description :** Un commerce de détail veut migrer son activité en ligne. Vente de vêtements, gestion de stock, expédition et retours.
-
-**Spécificités :**
-- Catalogue de produits (catégories, attributs, images)
-- Panier d'achat (persistant)
-- Processus de commande (paiement, confirmation, expédition, suivi)
-- Gestion des retours et remboursements
-- Intégration avec ERP existant
-
-**Artefacts attendus :**
-- Analyse métier : flux de commande, gestion de stock, retours
-- Architecture : Monolithe modulaire (ou microservices selon volume), API GraphQL, Elasticsearch pour la recherche
-- Schéma DB : tables `products`, `categories`, `orders`, `order_items`, `inventory`, `returns`
-- Diagrammes : Diagramme de séquence pour le processus de commande
-- Backlog : 15 user stories (incluant gestion stock et retours)
+**Expected artifacts:**
+- Business analysis: actors, features, business rules
+- Architecture: REST API, PostgreSQL DB, Redis for sessions, notification microservice
+- DB schema: `users`, `roles`, `subscriptions`, `bookings`, `schedules`, `payments` tables
+- Diagrams: C4 level 2 (containers)
+- Backlog: 10 user stories
 
 ---
 
-## Cas 3 : Marketplace (multi-vendeurs)
+## Case 2: E-commerce (physical products)
 
-**Description :** Une plateforme mettant en relation des vendeurs et des acheteurs (ex: Etsy, Airbnb). Chaque vendeur gère son propre catalogue et ses commandes.
+**Description:** A retail business wants to move its activity online. Selling clothes, inventory management, shipping, and returns.
 
-**Spécificités :**
-- Multi-vendeurs avec des dashboards séparés
-- Commission sur chaque vente
-- Système d'évaluation (vendeur, produit)
-- Gestion des litiges
-- Paiement différé (escrow)
-
-**Artefacts attendus :**
-- Analyse métier : cycle de vie d'une vente, commission, évaluations
-- Architecture : Microservices (vendeurs, commandes, paiements, évaluations), Event-driven (Kafka)
-- Schéma DB : tables `vendors`, `products`, `orders`, `commissions`, `reviews`, `disputes`
-- Diagrammes : Diagramme de déploiement (Kubernetes, services)
-- Backlog : 20 user stories (incluant la gestion des litiges)
+**Expected artifacts:**
+- Business analysis: order flow, inventory management, returns
+- Architecture: Modular monolith (or microservices by volume), GraphQL API, Elasticsearch for search
+- DB schema: `products`, `categories`, `orders`, `order_items`, `inventory`, `returns` tables
+- Diagrams: Sequence diagram for the order process
+- Backlog: 15 user stories (including inventory and returns management)
 
 ---
 
-## Cas 4 : Application mobile (fitness / santé)
+## Case 3: Marketplace (multi-vendor)
 
-**Description :** Une application mobile de suivi d'activité physique. Les utilisateurs enregistrent leurs séances, fixent des objectifs, reçoivent des recommandations et partagent leurs progrès.
+**Description:** A platform connecting sellers and buyers (e.g. Etsy, Airbnb). Each seller manages their own catalog and orders.
 
-**Spécificités :**
-- Mobile-first (iOS + Android)
-- Mode hors-ligne (synchronisation différée)
-- Capteurs (accéléromètre, GPS)
-- Recommandations personnalisées (IA)
-- Partage social
-
-**Artefacts attendus :**
-- Analyse métier : fonctionnalités mobiles, données capteurs, synchronisation
-- Architecture : Backend API REST, WebSockets pour le live, cache local (SQLite)
-- Schéma DB : tables `users`, `workouts`, `goals`, `achievements`, `social_posts`
-- Diagrammes : Diagramme de séquence pour la synchronisation hors-ligne
-- Backlog : 12 user stories (incluant la gestion du hors-ligne)
+**Expected artifacts:**
+- Business analysis: sale lifecycle, commission, evaluations
+- Architecture: Microservices (vendors, orders, payments, reviews), Event-driven (Kafka)
+- DB schema: `vendors`, `products`, `orders`, `commissions`, `reviews`, `disputes` tables
+- Diagrams: Deployment diagram (Kubernetes, services)
+- Backlog: 20 user stories (including dispute management)
 
 ---
 
-## Cas 5 : API publique (SaaS B2B)
+## Case 4: Mobile application (fitness / health)
 
-**Description :** Une entreprise développe une API publique permettant à des partenaires d'intégrer ses services (ex: paiement, géolocalisation, IA).
+**Description:** A mobile fitness tracking application. Users log their sessions, set goals, receive recommendations, and share their progress.
 
-**Spécificités :**
-- Documentation OpenAPI
-- Rate limiting, quotas
-- Authentification OAuth2 / API Keys
-- Analytics d'usage
-- Plans tarifaires (freemium, enterprise)
-
-**Artefacts attendus :**
-- Analyse métier : cas d'usage API, volumes d'appels, SLA
-- Architecture : API Gateway, microservices, Redis pour cache et rate limiting
-- Schéma DB : tables `clients`, `api_keys`, `usage_logs`, `subscriptions`
-- Diagrammes : Diagramme de séquence d'authentification OAuth2
-- Backlog : 10 user stories (incluant la facturation à l'usage)
+**Expected artifacts:**
+- Business analysis: mobile features, sensor data, synchronization
+- Architecture: REST API backend, WebSockets for live, local cache (SQLite)
+- DB schema: `users`, `workouts`, `goals`, `achievements`, `social_posts` tables
+- Diagrams: Sequence diagram for offline synchronization
+- Backlog: 12 user stories (including offline management)
 
 ---
 
-## Cas 6 : Migration d'un système legacy (monolithe → microservices)
+## Case 5: Public API (B2B SaaS)
 
-**Description :** Une PME de 150 employés opère depuis 8 ans sur un monolithe PHP/MySQL gérant la facturation, la gestion des clients et le suivi des commandes. La base de code est devenue difficile à maintenir, les déploiements prennent plusieurs heures et chaque modification risque de casser une autre partie du système. La direction technique souhaite migrer progressivement vers une architecture microservices sans interrompre l'activité.
+**Description:** A company develops a public API allowing partners to integrate its services (e.g. payment, geolocation, AI).
 
-**Spécificités :**
-- Système en production avec des milliers d'utilisateurs actifs — zéro interruption acceptable
-- Migration progressive (strangler fig pattern) : les modules sont migrés un à un
-- Trois domaines à découpler en priorité : Facturation, CRM, Gestion des commandes
-- Interopérabilité temporaire entre l'ancien système et les nouveaux services pendant la transition
-- Équipe de 8 développeurs avec une expérience limitée en architecture distribuée
-- Budget infrastructure limité : migration vers AWS avec optimisation des coûts
+**Expected artifacts:**
+- Business analysis: API use cases, call volumes, SLA
+- Architecture: API Gateway, microservices, Redis for cache and rate limiting
+- DB schema: `clients`, `api_keys`, `usage_logs`, `subscriptions` tables
+- Diagrams: OAuth2 authentication sequence diagram
+- Backlog: 10 user stories (including usage billing)
 
-**Contraintes techniques :**
-- L'ancien système doit continuer à fonctionner pendant toute la durée de la migration
-- Les données doivent être synchronisées entre le monolithe et les nouveaux services
-- Aucune perte de données tolérée (audit trail complet requis)
+---
 
-**Artefacts attendus :**
-- Analyse métier : cartographie des domaines existants, dépendances entre modules, risques de migration
-- Architecture : Plan de migration en 3 phases (strangler fig), architecture cible microservices, stratégie de coexistence monolithe/microservices
-- Schéma DB : Modèle de données cible par service, stratégie de séparation des bases de données, plan de migration des données
-- Diagrammes : Architecture AS-IS (monolithe actuel), architecture TO-BE (microservices cible), diagramme de séquence pour la coexistence temporaire
-- Backlog : 25 user stories organisées en 3 phases de migration, avec critères d'acceptance et points de non-régression
-- Plan de risques : Identification des points de rupture potentiels et stratégies de rollback
+## Case 6: Legacy system migration (monolith → microservices)
 
-**Pourquoi ce cas est important pour AI Software Architect :**
+**Description:** A 150-employee SME has been running on a PHP/MySQL monolith for 8 years managing billing, customer management, and order tracking. The codebase has become difficult to maintain. The technical team wants to progressively migrate to a microservices architecture without interrupting operations.
 
-Ce cas illustre la capacité de la plateforme à gérer des contextes complexes au-delà du green field. Les Solution Architects et CTOs en entreprise font face à ce type de projet bien plus souvent qu'à des créations from scratch. Il démontre que AI Software Architect n'est pas seulement un outil pour startups, mais un assistant d'architecture pour des décisions techniques à fort enjeu.
+**Specifics:**
+- Production system with thousands of active users — zero downtime acceptable
+- Progressive migration (strangler fig pattern)
+- Three priority domains: Billing, CRM, Order Management
+- Temporary interoperability between old and new systems
+- Team of 8 developers with limited distributed architecture experience
+- Limited infrastructure budget: migration to AWS with cost optimization
+
+**Expected artifacts:**
+- Business analysis: existing domain mapping, module dependencies, migration risks
+- Architecture: 3-phase migration plan (strangler fig), target microservices architecture
+- DB schema: target data model per service, database separation strategy
+- Diagrams: AS-IS architecture (current monolith), TO-BE architecture (target microservices)
+- Backlog: 25 user stories organized in 3 migration phases
+- Risk plan: potential breaking points and rollback strategies

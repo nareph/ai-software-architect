@@ -1,144 +1,103 @@
-# AI Software Architect - Market Analysis
+# Market Analysis
 
-## Étude des solutions existantes
+## Overview of existing solutions
 
 ### v0.dev (Vercel) → v0.app
 
-**Ce qu'ils font :** Assistant IA pour le scaffolding frontend. Transforme des prompts textuels en composants React stylés avec Tailwind CSS. La nouvelle version v0.app est "agentique" : elle peut rechercher, raisonner, déboguer et planifier. Elle génère des applications full-stack avec UI, contenu, backend et logique.
+**What they do:** AI assistant for frontend scaffolding. Transforms text prompts into React components styled with Tailwind CSS. The new v0.app version is "agentic": it can search, reason, debug, and plan. It generates full-stack applications with UI, content, backend, and logic.
 
-**Ce qu'ils ne font pas :** Pas d'architecture logicielle, pas de modélisation de base de données, pas de backlog, pas d'analyse métier structurée. Reste centré sur la génération d'UI et de code frontend.
+**What they don't do:** No software architecture, no database modeling, no backlog, no structured business analysis. Remains focused on UI and frontend code generation.
 
-**Positionnement :** "AI builder for everyone" — outil de prototypage rapide, pas un assistant d'architecture.
+**Positioning:** "AI builder for everyone" — rapid prototyping tool, not an architecture assistant.
 
 ---
 
 ### Bolt (StackBlitz)
 
-**Ce qu'ils font :** Agent IA de développement web full-stack. Bolt v2 propose des agents multi-modèles (Claude, etc.) avec infrastructure intégrée (bases de données, hébergement, authentification, paiements). Exécute des tâches complexes en parallèle.
+**What they do:** AI full-stack web development agent. Bolt v2 offers multi-model agents (Claude, etc.) with integrated infrastructure (databases, hosting, authentication, payments). Executes complex tasks in parallel.
 
-**Ce qu'ils ne font pas :** Pas d'analyse métier préalable, pas de documentation architecturale structurée. L'utilisateur doit savoir ce qu'il veut construire.
+**What they don't do:** No prior business analysis, no structured architectural documentation. The user must already know what they want to build.
 
-**Positionnement :** "Vibe coding pro" — génération de code, pas de conception architecturale.
+**Positioning:** "Vibe coding pro" — code generation, not architectural design.
 
 ---
 
 ### Lovable
 
-**Ce qu'ils font :** Plateforme de développement par chat. Génère des applications full-stack avec frontend React et backend Supabase. Mode Agent capable d'explorer le codebase, corriger des bugs et refactorer. Intégration GitHub et déploiement en un clic.
+**What they do:** Chat-based development platform. Generates full-stack applications with React frontend and Supabase backend. Agent mode capable of exploring the codebase, fixing bugs, and refactoring. GitHub integration and one-click deployment.
 
-**Ce qu'ils ne font pas :** Stack technologique relativement verrouillée (React + Supabase). Pas de conception d'architecture indépendante du code.
+**What they don't do:** Relatively locked tech stack (React + Supabase). No architecture design independent of code.
 
-**Positionnement :** Outil "vibe coding" le plus complet pour le web — mais focalisé sur l'implémentation, pas la conception.
+**Positioning:** Most complete "vibe coding" tool for the web — but focused on implementation, not design.
 
 ---
 
 ### Devin (Cognition)
 
-**Ce qu'ils font :** "Premier ingénieur logiciel IA autonome". Peut écrire, exécuter et tester du code. Planifie et exécute des tâches complexes, de la migration de code à la résolution d'incidents. Opère dans un environnement sandboxé avec shell, éditeur et navigateur.
+**What they do:** "First autonomous AI software engineer." Can write, execute, and test code. Plans and executes complex tasks, from code migration to incident resolution. Operates in a sandboxed environment with shell, editor, and browser.
 
-**Ce qu'ils ne font pas :** Ne produit pas d'architecture en amont. Conçu pour des tâches bien définies, pas pour la conception de systèmes.
+**What they don't do:** Does not produce upstream architecture. Designed for well-defined tasks, not system design.
 
-**Positionnement :** Agent d'implémentation autonome, pas architecte.
+**Positioning:** Autonomous implementation agent, not an architect.
 
 ---
 
 ### Claude Code (Anthropic)
 
-**Ce qu'ils font :** Agent en ligne de commande qui lit les codebases, édite des fichiers, exécute des commandes. Couvre tout le cycle de vie : exploration, conception, construction, déploiement, support.
+**What they do:** Command-line agent that reads codebases, edits files, executes commands. Covers the full lifecycle: exploration, design, building, deployment, support.
 
-**Ce qu'ils ne font pas :** Nécessite un codebase existant. Pas de génération d'architecture à partir d'une simple description métier.
+**What they don't do:** Requires an existing codebase. No architecture generation from a simple business description.
 
-**Positionnement :** Assistant de développement intégré à l'environnement de code, pas outil de conception amont.
+**Positioning:** Development assistant integrated into the code environment, not an upstream design tool.
 
 ---
 
 ### Cursor
 
-**Ce qu'ils font :** IDE autonome (fork de VS Code) centré sur l'IA. Compréhension de l'ensemble du codebase. Agents locaux et cloud, exécution parallèle.
+**What they do:** Autonomous IDE (VS Code fork) centered on AI. Understanding of the entire codebase. Local and cloud agents, parallel execution.
 
-**Ce qu'ils ne font pas :** Outil de codage, pas de génération d'architecture. Nécessite un projet existant.
+**What they don't do:** Coding tool, not architecture generation. Requires an existing project.
 
-**Positionnement :** "IDE rebuilt around AI" — assistant de développement, pas architecte.
-
----
-
-### Replit Agent
-
-**Ce qu'ils font :** Agent de bout en bout capable de planifier, coder, tester et déployer. Supporte tous les frameworks et langages (Python, Java, Rust, Go, C#, Angular, Vue). Agent de sécurité pour audits de code.
-
-**Ce qu'ils ne font pas :** Pas de phase d'architecture dédiée. L'agent passe directement à l'implémentation.
-
-**Positionnement :** Environnement de développement cloud avec agent IA, pas outil de conception.
+**Positioning:** "IDE rebuilt around AI" — development assistant, not architect.
 
 ---
 
-## Outils de modélisation traditionnels
+### Traditional modeling tools
 
-Ces outils représentent le marché existant de la conception architecturale — les vrais concurrents sur l'espace "architecture avant le code". Ils sont utilisés aujourd'hui par les architectes seniors que nous ciblons.
+#### Miro / Lucidchart / draw.io
 
-### Miro / Lucidchart / draw.io
+**What they do:** Collaborative whiteboards and diagram tools. Allow manually drawing architectures, flows, ERDs, and C4 diagrams.
 
-**Ce qu'ils font :** Tableaux blancs collaboratifs et outils de diagrammes. Permettent de dessiner manuellement des architectures, des flux, des ERD et des C4 diagrams.
+**What they don't do:** No automatic generation from a business description. No guaranteed consistency between artifacts. No backlog, no integrated business analysis.
 
-**Ce qu'ils ne font pas :** Aucune génération automatique à partir d'une description métier. Pas de cohérence garantie entre artefacts. Pas de backlog, pas d'analyse métier intégrée.
+**Main limitation:** 100% manual. Quality depends entirely on user expertise.
 
-**Limite principale :** 100 % manuel. La qualité dépend entièrement de l'expertise de l'utilisateur. Aucun filet de sécurité contre les incohérences.
+#### Structurizr
 
-**Positionnement :** Outils de dessin, pas de conception intelligente.
+**What they do:** C4 modeling tool based on code (DSL). Allows describing an architecture in text and automatically generating consistent diagrams.
 
----
+**What they don't do:** Requires C4 expertise and DSL mastery. No business analysis, no backlog, no stack recommendations. No generation from natural language.
 
-### Structurizr
+#### ChatGPT / Claude (general use)
 
-**Ce qu'ils font :** Outil de modélisation C4 basé sur le code (DSL). Permet de décrire une architecture en texte et de générer des diagrammes cohérents automatiquement.
+**What they do:** Can produce architecture drafts, database schemas, or backlogs if asked manually.
 
-**Ce qu'ils ne font pas :** Nécessite une expertise C4 et la maîtrise du DSL. Pas d'analyse métier, pas de backlog, pas de recommandations de stack. Aucune génération à partir d'une description naturelle.
-
-**Limite principale :** Courbe d'apprentissage élevée. Réservé aux architectes expérimentés. Pas accessible aux founders ou freelances.
-
-**Positionnement :** Outil expert pour architectes C4 — complémentaire, pas concurrent direct.
+**What they don't do:** No structured workflow. No guaranteed consistency between artifacts. No standardized export. No automatic validation. Each user reinvents their own process.
 
 ---
 
-### Archi (ArchiMate)
+## Comparison table
 
-**Ce qu'ils font :** Outil de modélisation d'architecture d'entreprise basé sur le standard ArchiMate. Utilisé dans les grandes entreprises pour modéliser les systèmes d'information à grande échelle.
-
-**Ce qu'ils ne font pas :** Outil très complexe, standard propriétaire, courbe d'apprentissage de plusieurs mois. Aucune IA intégrée, aucun lien avec le backlog ou le code.
-
-**Limite principale :** Réservé aux grandes entreprises avec des architectes d'entreprise dédiés. Inadapté aux startups et freelances.
-
-**Positionnement :** Modélisation d'architecture d'entreprise — segment de marché différent.
-
----
-
-### ChatGPT / Claude (usage généraliste)
-
-**Ce qu'ils font :** Peuvent produire des ébauches d'architecture, des schémas de bases de données ou des backlogs si on leur demande manuellement.
-
-**Ce qu'ils ne font pas :** Pas de workflow structuré. Pas de cohérence garantie entre les artefacts. Pas d'export standardisé. Pas de validation automatique. Chaque utilisateur réinvente son propre processus.
-
-**Limite principale :** Le résultat dépend entièrement de la qualité du prompt. Sans structure, sans pipeline, sans validation — les artefacts ne sont pas prêts à l'emploi.
-
-**Positionnement :** Usage ad hoc, pas une plateforme. C'est précisément ce que AI Software Architect structure et automatise.
-
----
-
-## Synthèse et positionnement d'AI Software Architect
-
-| Outil | Génération de code | Architecture | Analyse métier | Backlog | Diagrammes | Estimation coûts | Accessible non-experts |
-|-------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Tool | Code Gen | Architecture | Business Analysis | Backlog | Diagrams | Cost Est. | Non-expert Accessible |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | v0.app | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | Bolt | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | Lovable | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | Devin | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ⚠️ |
 | Claude Code | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ⚠️ |
-| Cursor | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ⚠️ |
-| Replit Agent | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| Miro / draw.io | ❌ | ⚠️ manuel | ❌ | ❌ | ⚠️ manuel | ❌ | ✅ |
-| Structurizr | ❌ | ⚠️ partiel | ❌ | ❌ | ✅ | ❌ | ❌ |
-| Archi | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ |
-| ChatGPT / Claude ad hoc | ❌ | ⚠️ non structuré | ⚠️ non structuré | ⚠️ non structuré | ⚠️ non structuré | ❌ | ✅ |
+| Miro / draw.io | ❌ | ⚠️ manual | ❌ | ❌ | ⚠️ manual | ❌ | ✅ |
+| Structurizr | ❌ | ⚠️ partial | ❌ | ❌ | ✅ | ❌ | ❌ |
+| ChatGPT / Claude ad hoc | ❌ | ⚠️ unstructured | ⚠️ unstructured | ⚠️ unstructured | ⚠️ unstructured | ❌ | ✅ |
 | **AI Software Architect** | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-**Conclusion :** Aucun outil existant ne combine génération automatique, cohérence inter-artefacts et accessibilité pour non-experts sur la phase d'architecture amont. Les outils de génération de code ignorent cette phase. Les outils de modélisation traditionnels la couvrent partiellement, mais requièrent une expertise élevée et restent 100 % manuels. AI Software Architect occupe un espace vide et complémentaire : **la conception avant l'implémentation, automatisée et accessible**.
+**Conclusion:** No existing tool combines automatic generation, inter-artifact consistency, and accessibility for non-experts on the upstream architecture phase. AI Software Architect occupies an empty and complementary space: **design before implementation, automated and accessible**.

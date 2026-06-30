@@ -196,4 +196,4 @@ The full documentation lives in [`docs/`](./docs/README.md):
 
 ## License
 
-MIT — see [LICENSE](./LICENSE)
+MIT 

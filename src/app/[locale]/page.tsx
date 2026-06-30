@@ -1,10 +1,12 @@
 // src/app/[locale]/page.tsx
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { ArrowRight, Layers, Database, GitBranch, FileText, CheckSquare } from 'lucide-react'
+import { ArrowRight, Layers, Database, GitBranch, FileText, CheckSquare, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
+
+const GITBOOK_URL = 'https://ai-software-architect.gitbook.io/ai-software-architect/'
 
 const Logo = () => (
   <svg width="28" height="28" viewBox="0 0 64 64" fill="none">
@@ -28,6 +30,7 @@ const artifactKeys = ['businessAnalysis', 'architecture', 'databaseSchema', 'dia
 
 export default function LandingPage() {
   const t = useTranslations('landing')
+  const tNav = useTranslations('nav')
   const tCommon = useTranslations('common')
 
   return (
@@ -44,13 +47,24 @@ export default function LandingPage() {
             {tCommon('appName')}
           </span>
         </div>
+
         <div className="flex items-center gap-2">
+          {/* Documentation link */}
+          <a
+            href={GITBOOK_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button variant="ghost" size="sm" className="gap-2">
+              <BookOpen className="w-4 h-4" />
+              <span className="hidden sm:inline">{tNav('documentation')}</span>
+            </Button>
+          </a>
+
           <Link href="/signin">
             <Button variant="ghost" size="sm">{t('hero.ctaSecondary')}</Button>
           </Link>
-          <Link href="/register">
-            <Button size="sm">{t('hero.ctaPrimary')}</Button>
-          </Link>
+
           <LanguageSwitcher />
           <ThemeToggle />
         </div>
@@ -125,18 +139,30 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer
-        className="px-6 py-6 text-center text-xs border-t"
+        className="px-6 py-6 flex flex-col sm:flex-row items-center justify-center gap-3 text-center text-xs border-t"
         style={{ color: 'var(--foreground-tertiary)', borderColor: 'var(--border)' }}
       >
-        © 2026 {tCommon('appName')} · {t('footer.builtBy')}{' '}
+        <span>
+          © 2026 {tCommon('appName')} · {t('footer.builtBy')}{' '}
+          <a
+            href="https://nareph-portfolio.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--brand)' }}
+            className="hover:underline"
+          >
+            Nareph
+          </a>
+        </span>
+        <span className="hidden sm:inline">·</span>
         <a
-          href="https://nareph-portfolio.vercel.app"
+          href={GITBOOK_URL}
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: 'var(--brand)' }}
           className="hover:underline"
         >
-          Nareph
+          {tNav('documentation')}
         </a>
       </footer>
     </div>

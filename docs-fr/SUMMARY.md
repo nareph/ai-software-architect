@@ -2,7 +2,7 @@
 
 ## Introduction
 * [Overview](README.md)
-* [Roadmap](ROADMAP.md)
+* [Roadmap](../ROADMAP.md)
 
 ## Research & Vision
 * [Project Vision](00-research/project-vision.md)

@@ -1,126 +1,119 @@
-# AI Software Architect - Product Requirements Document (PRD)
+# Product Requirements Document (PRD)
 
-## Objectif du produit
+## Product objective
 
-AI Software Architect est une plateforme d'ingénierie assistée par IA qui transforme des besoins métier en artefacts techniques exploitables (architecture, schéma DB, backlog, diagrammes) avant toute écriture de code.
-
----
-
-## Périmètre (MVP)
-
-### Fonctionnalités incluses
-
-| Fonctionnalité | Description |
-|----------------|-------------|
-| **Input textuel** | L'utilisateur saisit une description de son projet (minimum 50 mots). |
-| **Analyse métier** | Extraction automatique des exigences, acteurs, fonctionnalités et contraintes. |
-| **Génération de l'architecture** | Proposition de stack technique, modules, et justifications. |
-| **Schéma de base de données** | Modèle conceptuel avec tables, relations et contraintes. |
-| **Diagrammes Mermaid** | Génération automatique des diagrammes (C4 niveau 2 ou séquence). |
-| **Backlog de développement** | Liste de user stories avec priorité et story points (Fibonacci). |
-| **Export** | Téléchargement au format Markdown, PDF et JSON. |
-
-### Fonctionnalités exclues (V1)
-
-- Génération de code source
-- Intégration avec des IDEs (VS Code, Cursor)
-- Agents autonomes multi-modèles dynamiques
-- Base de connaissances partagée (RAG)
-- Estimation des coûts cloud (AWS, Azure, GCP)
+AI Software Architect is an AI-assisted engineering platform that transforms business requirements into actionable technical artifacts (architecture, DB schema, backlog, diagrams) before any code is written.
 
 ---
 
-## Contraintes techniques
+## Scope (MVP)
 
-| Domaine | Contrainte |
-|---------|------------|
-| **Temps de réponse** | La génération complète doit prendre moins de 2 minutes pour un projet standard. |
-| **Langue** | Interface et documentation en français (MVP), anglais prévu en V2. |
-| **Modèle LLM principal** | Claude Sonnet 4.6 (Anthropic) — modèle fixe pour le MVP. |
-| **Modèle LLM fallback** | GPT-4o via OpenRouter — activé automatiquement en cas d'indisponibilité du modèle principal. |
-| **Sélection dynamique de modèle** | Reportée en V2, avec comparaison Claude / GPT / Gemini / DeepSeek. |
-| **Stockage** | PostgreSQL pour les projets, artefacts et historique de versions. |
-| **Authentification** | Simple email/password (MVP), SSO prévu en V2. |
-| **Limite de rate** | 20 requêtes par heure par utilisateur (gratuit). |
+### Included features
 
----
-
-## Stratégie de validation des artefacts
-
-La qualité des artefacts générés est un prérequis non négociable. Chaque artefact passe par une étape de validation automatique avant d'être affiché à l'utilisateur.
-
-### Pipeline de validation
-
-```
-LLM génère l'artefact
-        ↓
-Validation structurelle (format, complétude)
-        ↓
-Validation de cohérence inter-artefacts
-        ↓
-        ├─ Succès → Affichage à l'utilisateur
-        └─ Échec → Retry automatique (max 2 tentatives)
-                        ↓
-                  Échec persistant → Notification utilisateur + option retry manuel
-```
-
-### Règles de cohérence inter-artefacts
-
-| Vérification | Description |
+| Feature | Description |
 |---|---|
-| **Architecture ↔ Schéma DB** | Les entités mentionnées dans l'architecture doivent exister dans le schéma DB. |
-| **Schéma DB ↔ Backlog** | Les user stories impliquant des données doivent référencer des tables existantes. |
-| **Analyse métier ↔ Architecture** | Les acteurs identifiés doivent correspondre à des rôles dans l'architecture. |
-| **Diagrammes ↔ Architecture** | Les composants des diagrammes Mermaid doivent refléter l'architecture générée. |
+| **Text input** | User enters a project description (minimum 50 words). |
+| **Business analysis** | Automatic extraction of requirements, actors, features, and constraints. |
+| **Architecture generation** | Tech stack proposal, modules, and justifications. |
+| **Database schema** | Conceptual model with tables, relations, and constraints. |
+| **Mermaid diagrams** | Automatic diagram generation (C4 level 2 or sequence). |
+| **Development backlog** | User stories with priority and story points (Fibonacci). |
+| **Export** | Download in Markdown, PDF, and JSON formats. |
 
-### Gestion des erreurs LLM
-
-- **Timeout (> 30 s par artefact) :** L'étape est marquée en erreur, les autres étapes continuent. L'utilisateur peut relancer manuellement l'étape défaillante.
-- **Artefact invalide (2 retries échoués) :** L'utilisateur est notifié avec une description de l'erreur. Il peut modifier son input et relancer.
-- **Incohérence détectée :** L'artefact est affiché avec un indicateur d'avertissement `⚠️ Point d'attention détecté`. L'utilisateur peut demander une correction ciblée via le chat.
-
----
-
-## Objectifs produits (OKRs)
-
-| Objectif | Métrique | Cible |
-|----------|----------|-------|
-| **Adoption** | Nombre de projets générés par semaine | > 100 |
-| **Qualité** | Taux d'approbation par des architectes | > 80 % |
-| **Engagement** | Taux de retour utilisateur (feedback) | > 30 % |
-| **Efficacité** | Réduction du temps de conception estimé | > 70 % |
+### Excluded features (V1)
+* Source code generation
+* IDE integrations (VS Code, Cursor)
+* Dynamic multi-model agents
+* Shared knowledge base (RAG)
+* Cloud cost estimation (AWS, Azure, GCP)
 
 ---
 
-## KPIs détaillés
+## Technical constraints
 
-| KPI | Définition | Seuil critique |
-|-----|------------|----------------|
-| **Temps de génération** | Délai entre la soumission et l'affichage des artefacts | < 120 secondes |
-| **Taux de complétion** | Pourcentage de générations qui aboutissent sans erreur | > 95 % |
-| **Score de cohérence** | Vérification automatique de la cohérence entre artefacts | > 90 % |
-| **Satisfaction utilisateur** | Note moyenne sur 5 (enquête post-génération) | > 4.0 |
-| **Taux d'export** | Pourcentage d'utilisateurs qui exportent les artefacts | > 60 % |
-| **Taux de retry manuel** | Pourcentage de générations nécessitant un retry utilisateur | < 5 % |
+| Domain | Constraint |
+|---|---|
+| **Response time** | Complete generation must take less than 2 minutes for a standard project. |
+| **Language** | French interface (MVP), English planned for V2. |
+| **Primary LLM** | Google Gemini 3.5 Flash (free tier) — fixed model for MVP. |
+| **Fallback LLM** | DeepSeek V4 Flash — activated automatically on primary model unavailability. |
+| **Dynamic model selection** | Deferred to V2. |
+| **Storage** | PostgreSQL for projects, artifacts, and version history. |
+| **Authentication** | Simple email/password (MVP), SSO planned for V2. |
+| **Rate limit** | 20 requests per hour per user (free). |
+
+---
+
+## Artifact validation strategy
+
+Each artifact passes through an automatic validation step before being displayed to the user.
+
+### Validation pipeline
+
+```
+LLM generates artifact
+        ↓
+Structural validation (format, completeness)
+        ↓
+Cross-artifact coherence validation
+        ↓
+        ├─ Success → Display to user
+        └─ Failure → Automatic retry (max 2 attempts)
+                        ↓
+                  Persistent failure → User notification + manual retry option
+```
+
+### Cross-artifact coherence rules
+
+| Check | Description |
+|---|---|
+| **Architecture ↔ DB Schema** | Entities in architecture must exist in DB schema |
+| **DB Schema ↔ Backlog** | CRUD stories must reference existing tables |
+| **Business Analysis ↔ Architecture** | Identified actors must correspond to roles in architecture |
+| **Diagrams ↔ Architecture** | Mermaid components must reflect generated architecture |
+
+---
+
+## Product OKRs
+
+| Objective | Metric | Target |
+|---|---|---|
+| **Adoption** | Projects generated per week | > 100 |
+| **Quality** | Architect approval rate | > 80% |
+| **Engagement** | User feedback return rate | > 30% |
+| **Efficiency** | Reduction in estimated design time | > 70% |
+
+---
+
+## Detailed KPIs
+
+| KPI | Definition | Critical threshold |
+|---|---|---|
+| **Generation time** | Delay between submission and artifact display | < 120 seconds |
+| **Completion rate** | % of generations that complete without error | > 95% |
+| **Coherence score** | Automatic cross-artifact coherence check | > 90% |
+| **User satisfaction** | Average score out of 5 (post-generation survey) | > 4.0 |
+| **Export rate** | % of users who export artifacts | > 60% |
+| **Manual retry rate** | % of generations requiring a user retry | < 5% |
 
 ---
 
 ## UX Principles
 
-1. **Simplicité** : Un seul champ de saisie, un bouton "Générer".
-2. **Transparence** : Affichage de la progression étape par étape.
-3. **Contrôle** : Possibilité de modifier les inputs intermédiaires.
-4. **Clarté** : Visualisation structurée (onglets, diagrammes, tableaux).
-5. **Actionnabilité** : Les artefacts sont directement exploitables par les équipes.
+1. **Simplicity:** One input field, one "Generate" button.
+2. **Transparency:** Step-by-step progress display.
+3. **Control:** Ability to modify intermediate inputs.
+4. **Clarity:** Structured visualization (tabs, diagrams, tables).
+5. **Actionability:** Artifacts are directly usable by teams.
 
 ---
 
-## Critères de sortie du MVP
+## MVP exit criteria
 
-- [ ] 10 utilisateurs bêta ont généré au moins 3 projets chacun
-- [ ] 100 % des cas de test (définis dans `use-cases.md`) passent avec succès
-- [ ] Le temps de génération moyen est inférieur à 2 minutes
-- [ ] 5 architectes seniors ont validé la qualité des résultats
-- [ ] L'interface est responsive (mobile, tablette, desktop)
-- [ ] Le pipeline de validation inter-artefacts est actif et couvre 100 % des règles définies
-- [ ] Le mécanisme de retry automatique est opérationnel et testé
+- [ ] 10 beta users have generated at least 3 projects each
+- [ ] 100% of test cases (defined in use-cases.md) pass successfully
+- [ ] Average generation time is under 2 minutes
+- [ ] 5 senior architects have validated the quality of results
+- [ ] Interface is responsive (mobile, tablet, desktop)
+- [ ] Cross-artifact validation pipeline is active and covers 100% of defined rules
+- [ ] Automatic retry mechanism is operational and tested
