@@ -228,6 +228,7 @@
     "notFoundDesc": "La page que vous cherchez n'existe pas.",
     "unauthorized": "Accès non autorisé",
     "serverError": "Erreur serveur",
-    "backHome": "Retour à l'accueil"
+    "backHome": "Retour à l'accueil",
+    "retry": "Réessayer"
   }
 }

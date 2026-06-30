@@ -228,6 +228,7 @@
     "notFoundDesc": "The page you are looking for does not exist.",
     "unauthorized": "Unauthorized",
     "serverError": "Server error",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "retry": "Retry"
   }
 }
