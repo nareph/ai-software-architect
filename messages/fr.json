@@ -144,6 +144,11 @@
   "newProject": {
     "title": "Nouveau projet",
     "subtitle": "Décrivez votre idée — l'IA génère l'architecture complète.",
+    "name": {
+      "label": "Nom du projet",
+      "required": "(requis)",
+      "placeholder": "Plateforme de réservation sportive, Marketplace e-commerce..."
+    },
     "description": {
       "label": "Description du projet",
       "required": "(requis)",
