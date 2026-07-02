@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { ArrowLeft, Sparkles, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 
 function countWords(text: string): number {
@@ -26,6 +27,7 @@ export default function NewProjectPage() {
   const [serverError, setServerError] = useState<string | null>(null)
 
   const schema = z.object({
+    name: z.string().min(1, 'Project name is required').max(80, 'Maximum 80 characters'),
     description: z
       .string()
       .min(1)
@@ -37,7 +39,7 @@ export default function NewProjectPage() {
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { description: '', template: '', constraints: '' },
+    defaultValues: { name: '', description: '', template: '', constraints: '' },
   })
 
   const description = form.watch('description')
@@ -55,6 +57,7 @@ export default function NewProjectPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          name: data.name,
           description: data.description,
           template: data.template || null,
           constraints: data.constraints || null,
@@ -110,6 +113,41 @@ export default function NewProjectPage() {
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-8">
 
+        {/* Project name */}
+        <Controller
+          name="name"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor="project-name">
+                {t('name.label')}
+                <span className="ml-1 text-xs font-normal" style={{ color: 'var(--foreground-tertiary)' }}>
+                  {t('name.required')}
+                </span>
+              </FieldLabel>
+              <Input
+                {...field}
+                id="project-name"
+                placeholder={t('name.placeholder')}
+                maxLength={80}
+                aria-invalid={fieldState.invalid}
+              />
+              <div className="flex justify-between mt-1">
+                {fieldState.invalid
+                  ? <FieldError errors={[fieldState.error]} />
+                  : <span />
+                }
+                <span
+                  className="text-xs tabular-nums"
+                  style={{ color: (field.value?.length ?? 0) > 65 ? 'var(--warning)' : 'var(--foreground-tertiary)' }}
+                >
+                  {field.value?.length ?? 0}/80
+                </span>
+              </div>
+            </Field>
+          )}
+        />
+
         {/* Description */}
         <Controller
           name="description"
@@ -138,6 +176,7 @@ export default function NewProjectPage() {
                 aria-invalid={fieldState.invalid}
               />
 
+              {/* Word counter */}
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center gap-2 flex-1">
                   <div className="h-1 flex-1 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
@@ -178,7 +217,6 @@ export default function NewProjectPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-1">
                 {TEMPLATE_KEYS.map((key) => {
                   const selected = field.value === key
-                  const label = key === '' ? t('template.none') : t(`project.template.${key}`, { default: key })
                   const desc = key === '' ? t('template.noneDesc') : t(`template.${key}Desc`)
                   return (
                     <button
@@ -192,7 +230,9 @@ export default function NewProjectPage() {
                         color: selected ? 'var(--brand-muted-fg)' : 'var(--foreground)',
                       }}
                     >
-                      <span className="text-xs font-medium capitalize">{key || t('template.none')}</span>
+                      <span className="text-xs font-medium capitalize">
+                        {key === '' ? t('template.none') : key}
+                      </span>
                       <span
                         className="text-xs mt-0.5"
                         style={{ color: selected ? 'var(--brand)' : 'var(--foreground-tertiary)' }}

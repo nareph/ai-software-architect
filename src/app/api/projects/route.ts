@@ -5,21 +5,13 @@ import { projects, artifacts } from '@/lib/db/schema'
 import { eq, and, ne, count, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
-// ── Validation ───────────────────────────────────────────────────────────────
 const CreateProjectSchema = z.object({
+  name: z.string().min(1).max(80),
   description: z.string().min(1),
   template: z.string().nullable().optional(),
   constraints: z.string().nullable().optional(),
 })
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-function generateProjectName(description: string): string {
-  // Extrait les premiers mots significatifs de la description
-  const words = description.trim().split(/\s+/).slice(0, 6).join(' ')
-  return words.length > 50 ? words.slice(0, 50) + '...' : words
-}
-
-// ── GET /api/projects ────────────────────────────────────────────────────────
 export async function GET(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -63,7 +55,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// ── POST /api/projects ───────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) {
@@ -73,7 +64,6 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // Validate body
   let body: unknown
   try {
     body = await req.json()
@@ -92,7 +82,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const { description, template, constraints } = parsed.data
+  const { name, description, template, constraints } = parsed.data
 
   // Check plan limits (free = max 10 projects)
   try {
@@ -121,15 +111,12 @@ export async function POST(req: NextRequest) {
     console.error('[POST /api/projects] Count error', error)
   }
 
-  // Create project
   try {
-    const name = generateProjectName(description)
-
     const [project] = await db
       .insert(projects)
       .values({
         userId: session.user.id,
-        name,
+        name: name.trim(),
         description,
         template: template ?? null,
         constraints: constraints ?? null,
@@ -137,7 +124,6 @@ export async function POST(req: NextRequest) {
       })
       .returning()
 
-    // Pre-create artifact rows (pending)
     const artifactTypes = [
       'business_analysis',
       'architecture',
