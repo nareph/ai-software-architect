@@ -46,6 +46,7 @@ export function ProjectDetailClient({ project }: { project: Project }) {
         activeArtifact={active}
         onSelect={setActive}
         artifactStatuses={artifactStatuses}
+        projectId={project.id}
       />
 
       <div className="flex-1 flex flex-col min-w-0">

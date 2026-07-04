@@ -8,11 +8,13 @@ import {
 } from 'lucide-react'
 import type { ArtifactType } from '@/lib/agents/types'
 import { PIPELINE_STEPS } from '@/lib/agents/types'
+import { ExportMenu } from '../export/ExportMenu'
 
 interface ArtifactSidebarProps {
   activeArtifact: ArtifactType
   onSelect: (type: ArtifactType) => void
-  artifactStatuses: Record<ArtifactType, 'pending' | 'generating' | 'completed' | 'failed'>
+  artifactStatuses: Record<ArtifactType, 'pending' | 'generating' | 'completed' | 'failed'>,
+  projectId: string
 }
 
 const artifactIcons: Record<ArtifactType, React.ElementType> = {
@@ -23,9 +25,8 @@ const artifactIcons: Record<ArtifactType, React.ElementType> = {
   backlog: ListChecks,
 }
 
-export function ArtifactSidebar({ activeArtifact, onSelect, artifactStatuses }: ArtifactSidebarProps) {
+export function ArtifactSidebar({ activeArtifact, onSelect, artifactStatuses, projectId }: ArtifactSidebarProps) {
   const t = useTranslations('generation.steps')
-  const tCommon = useTranslations('common')
 
   return (
     <div
@@ -75,26 +76,11 @@ export function ArtifactSidebar({ activeArtifact, onSelect, artifactStatuses }: 
         })}
       </nav>
 
-      {/* Actions — disabled for now, visible for vision */}
       <div className="mt-auto pt-3 border-t flex flex-col gap-1" style={{ borderColor: 'var(--border)' }}>
-        <button
-          disabled
-          title={tCommon('comingSoon')}
-          className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium opacity-40 cursor-not-allowed"
-          style={{ color: 'var(--foreground-secondary)' }}
-        >
-          <Download className="w-4 h-4 shrink-0" />
-          {tCommon('download')}
-        </button>
-        <button
-          disabled
-          title={tCommon('comingSoon')}
-          className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium opacity-40 cursor-not-allowed"
-          style={{ color: 'var(--foreground-secondary)' }}
-        >
-          <MessageCircle className="w-4 h-4 shrink-0" />
-          Feedback
-        </button>
+        <p className="text-xs font-medium px-2.5 mb-1" style={{ color: 'var(--foreground-tertiary)' }}>
+          Export
+        </p>
+        <ExportMenu projectId={projectId} />
       </div>
     </div>
   )
