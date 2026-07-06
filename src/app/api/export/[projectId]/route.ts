@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { generateMarkdown } from '@/lib/export/markdown'
 import { generateJSON } from '@/lib/export/json'
 import { PIPELINE_STEPS } from '@/lib/agents/types'
+import { generatePDF } from '@/lib/export/pdf'
 
 const ExportSchema = z.object({
   format: z.enum(['markdown', 'json', 'pdf']),
@@ -122,13 +123,23 @@ export async function POST(
       },
     })
   }
-
+  
   if (format === 'pdf') {
-    // PDF — Phase suivante
-    return NextResponse.json(
-      { error: { code: 'NOT_IMPLEMENTED', message: 'PDF export coming soon' } },
-      { status: 501 }
-    )
+    try {
+      const pdfBuffer = await generatePDF(exportProject)
+      return new NextResponse(new Uint8Array(pdfBuffer), {
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="${baseFilename}.pdf"`,
+        },
+      })
+    } catch (error) {
+      console.error('PDF generation error:', error)
+      return NextResponse.json(
+        { error: { code: 'PDF_GENERATION_ERROR', message: 'Failed to generate PDF' } },
+        { status: 500 }
+      )
+    }
   }
 
   return NextResponse.json(

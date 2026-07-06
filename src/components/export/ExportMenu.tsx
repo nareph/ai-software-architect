@@ -15,7 +15,7 @@ interface ExportMenuProps {
 const formats: { key: ExportFormat; icon: React.ElementType; label: string; ext: string; available: boolean }[] = [
   { key: 'markdown', icon: FileText,  label: 'Markdown',  ext: '.md',   available: true },
   { key: 'json',     icon: Braces,    label: 'JSON',      ext: '.json', available: true },
-  { key: 'pdf',      icon: FileImage, label: 'PDF',       ext: '.pdf',  available: false },
+  { key: 'pdf',      icon: FileImage, label: 'PDF',       ext: '.pdf',  available: true },
 ]
 
 export function ExportMenu({ projectId }: ExportMenuProps) {
