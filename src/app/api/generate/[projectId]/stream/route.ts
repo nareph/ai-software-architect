@@ -1,6 +1,5 @@
 // src/app/api/generate/[projectId]/stream/route.ts
-// Route SSE — délègue TOUT à l'orchestrateur.
-// Lit la locale depuis l'URL pour passer au pipeline.
+// Route SSE avec rate limiting — délègue la génération à l'orchestrateur
 
 import { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth/config'
@@ -9,17 +8,16 @@ import { projects } from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { runGenerationPipeline } from '@/lib/agents/orchestrator'
 import type { SSEEmitter } from '@/lib/agents/types'
+import { getGenerationLimiter, checkRateLimit } from '@/lib/utils/ratelimit'
 
 function sseMessage(event: string, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
 }
 
 function extractLocale(req: NextRequest): 'fr' | 'en' {
-  // Try to get locale from Referer header URL
   const referer = req.headers.get('referer') ?? ''
   if (referer.includes('/fr/')) return 'fr'
   if (referer.includes('/en/')) return 'en'
-  // Fallback to Accept-Language
   const acceptLang = req.headers.get('accept-language') ?? ''
   if (acceptLang.startsWith('fr')) return 'fr'
   return 'en'
@@ -36,6 +34,41 @@ export async function GET(
 
   const { projectId } = await params
 
+  // ── Rate limiting ────────────────────────────────────────────────────────
+  try {
+    const limiter = getGenerationLimiter()
+    const rl = await checkRateLimit(limiter, session.user.id)
+
+    if (!rl.success) {
+      const resetDate = new Date(rl.reset).toISOString()
+      const encoder = new TextEncoder()
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(sseMessage('generation_error', {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: `You have reached the limit of ${rl.limit} generations per hour. Reset at ${resetDate}.`,
+            resetAt: resetDate,
+            remaining: 0,
+          })))
+          controller.close()
+        }
+      })
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache, no-transform',
+          'X-RateLimit-Limit': String(rl.limit),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': resetDate,
+        },
+      })
+    }
+  } catch (rlError) {
+    // If Redis is unavailable, log and continue (fail open)
+    console.error('[RateLimit] Redis unavailable, proceeding without rate limit:', rlError)
+  }
+
+  // ── Fetch project ────────────────────────────────────────────────────────
   const project = await db.query.projects.findFirst({
     where: and(
       eq(projects.id, projectId),
@@ -50,6 +83,7 @@ export async function GET(
   const locale = extractLocale(req)
   const encoder = new TextEncoder()
 
+  // ── SSE Stream ───────────────────────────────────────────────────────────
   const stream = new ReadableStream({
     async start(controller) {
       const emit: SSEEmitter = (event, data) => {

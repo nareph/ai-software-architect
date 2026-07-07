@@ -1,4 +1,6 @@
 // src/app/api/export/[projectId]/route.ts
+// Route export avec rate limiting
+
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth/config'
 import { db } from '@/lib/db'
@@ -7,8 +9,9 @@ import { eq, and } from 'drizzle-orm'
 import { z } from 'zod'
 import { generateMarkdown } from '@/lib/export/markdown'
 import { generateJSON } from '@/lib/export/json'
-import { PIPELINE_STEPS } from '@/lib/agents/types'
 import { generatePDF } from '@/lib/export/pdf'
+import { PIPELINE_STEPS } from '@/lib/agents/types'
+import { getExportLimiter, checkRateLimit } from '@/lib/utils/ratelimit'
 
 const ExportSchema = z.object({
   format: z.enum(['markdown', 'json', 'pdf']),
@@ -20,15 +23,40 @@ export async function POST(
 ) {
   const session = await auth()
   if (!session?.user?.id) {
-    return NextResponse.json(
-      { error: { code: 'UNAUTHORIZED' } },
-      { status: 401 }
-    )
+    return NextResponse.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
+  }
+
+  // ── Rate limiting ──────────────────────────────────────────────────────────
+  try {
+    const limiter = getExportLimiter()
+    const rl = await checkRateLimit(limiter, session.user.id)
+
+    if (!rl.success) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'RATE_LIMIT_EXCEEDED',
+            message: `Export limit reached (${rl.limit}/hour). Try again later.`,
+            resetAt: new Date(rl.reset).toISOString(),
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': String(rl.limit),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': new Date(rl.reset).toISOString(),
+          },
+        }
+      )
+    }
+  } catch (rlError) {
+    console.error('[RateLimit] Redis unavailable for export:', rlError)
   }
 
   const { projectId } = await params
 
-  // Validate format
+  // ── Validate format ────────────────────────────────────────────────────────
   let body: unknown
   try {
     body = await req.json()
@@ -49,7 +77,7 @@ export async function POST(
 
   const { format } = parsed.data
 
-  // Fetch project
+  // ── Fetch project ──────────────────────────────────────────────────────────
   const project = await db.query.projects.findFirst({
     where: and(
       eq(projects.id, projectId),
@@ -64,7 +92,7 @@ export async function POST(
     )
   }
 
-  // Fetch artifacts in pipeline order
+  // ── Fetch artifacts ────────────────────────────────────────────────────────
   const projectArtifacts = await db.query.artifacts.findMany({
     where: eq(artifacts.projectId, project.id),
   })
@@ -94,7 +122,6 @@ export async function POST(
     artifacts: orderedArtifacts,
   }
 
-  // Sanitize filename
   const safeName = project.name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
@@ -103,7 +130,7 @@ export async function POST(
   const dateStr = new Date().toISOString().slice(0, 10)
   const baseFilename = `${safeName}-${dateStr}`
 
-  // Generate export
+  // ── Generate export ────────────────────────────────────────────────────────
   if (format === 'markdown') {
     const content = generateMarkdown(exportProject)
     return new NextResponse(content, {
@@ -123,7 +150,7 @@ export async function POST(
       },
     })
   }
-  
+
   if (format === 'pdf') {
     try {
       const pdfBuffer = await generatePDF(exportProject)
