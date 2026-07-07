@@ -21,6 +21,11 @@ export interface GenerationContext {
   description: string
   template: string | null
   constraints: string | null
+  locale: 'fr' | 'en'
+  // Cumulative context — populated as pipeline progresses
+  businessAnalysis?: unknown
+  architecture?: unknown
+  databaseSchema?: unknown
 }
 
 export type SSEEmitter = (event: string, data: unknown) => void

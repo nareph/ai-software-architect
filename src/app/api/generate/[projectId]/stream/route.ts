@@ -1,6 +1,6 @@
 // src/app/api/generate/[projectId]/stream/route.ts
 // Route SSE — délègue TOUT à l'orchestrateur.
-// Cette route ne sait pas si c'est un mock ou un LLM réel.
+// Lit la locale depuis l'URL pour passer au pipeline.
 
 import { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth/config'
@@ -12,6 +12,17 @@ import type { SSEEmitter } from '@/lib/agents/types'
 
 function sseMessage(event: string, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
+}
+
+function extractLocale(req: NextRequest): 'fr' | 'en' {
+  // Try to get locale from Referer header URL
+  const referer = req.headers.get('referer') ?? ''
+  if (referer.includes('/fr/')) return 'fr'
+  if (referer.includes('/en/')) return 'en'
+  // Fallback to Accept-Language
+  const acceptLang = req.headers.get('accept-language') ?? ''
+  if (acceptLang.startsWith('fr')) return 'fr'
+  return 'en'
 }
 
 export async function GET(
@@ -36,6 +47,7 @@ export async function GET(
     return new Response('Not found', { status: 404 })
   }
 
+  const locale = extractLocale(req)
   const encoder = new TextEncoder()
 
   const stream = new ReadableStream({
@@ -51,13 +63,14 @@ export async function GET(
             description: project.description,
             template: project.template,
             constraints: project.constraints,
+            locale,
           },
           emit
         )
       } catch (error) {
         console.error('[SSE /api/generate stream]', error)
         emit('generation_error', {
-          message: 'Une erreur inattendue est survenue pendant la génération.',
+          message: 'An unexpected error occurred during generation.',
           code: 'INTERNAL_ERROR',
         })
       } finally {
