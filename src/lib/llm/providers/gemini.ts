@@ -3,7 +3,7 @@ import type { LLMProvider, LLMRequest, LLMResponse } from '../types'
 
 export class GeminiProvider implements LLMProvider {
   readonly name = 'google'
-  readonly model = 'gemini-2.0-flash'
+  readonly model = 'gemini-3.5-flash'
 
   async call(request: LLMRequest): Promise<LLMResponse> {
     const apiKey = process.env.GEMINI_API_KEY
