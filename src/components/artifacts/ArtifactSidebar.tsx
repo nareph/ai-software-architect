@@ -65,19 +65,36 @@ export function ArtifactSidebar({
         const text = decoder.decode(value)
         const lines = text.split('\n')
 
+        let eventName = ''
+
         for (const line of lines) {
+          if (line.startsWith('event: ')) {
+            eventName = line.slice(7).trim()
+          }
           if (line.startsWith('data: ')) {
             try {
               const data = JSON.parse(line.slice(6))
-
-              if (line.includes('retry_completed')) {
+              if (eventName === 'retry_completed') {
                 onRetrySuccess?.(artifactType)
               }
-
-              if (line.includes('retry_failed')) {
-                throw new Error(data.error ?? 'Retry failed')
+              if (eventName === 'retry_failed') {
+                // Parse le vrai message d'erreur
+                const errorMsg = data.error ?? 'Unknown error'
+                if (errorMsg.includes('503') || errorMsg.includes('UNAVAILABLE')) {
+                  throw new Error('LLM service temporarily unavailable. Please try again in a few minutes.')
+                }
+                if (errorMsg.includes('429') || errorMsg.includes('quota')) {
+                  throw new Error('API quota exceeded. Please try again later or check your billing.')
+                }
+                if (errorMsg.includes('402') || errorMsg.includes('Insufficient Balance')) {
+                  throw new Error('DeepSeek account balance insufficient. Please recharge your account.')
+                }
+                throw new Error(errorMsg)
               }
-            } catch {}
+            } catch (e) {
+              if (e instanceof Error && e.message !== 'retry_failed') throw e
+            }
+            eventName = ''
           }
         }
       }

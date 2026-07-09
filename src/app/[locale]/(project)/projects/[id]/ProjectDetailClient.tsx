@@ -13,6 +13,7 @@ import { DiagramsView } from '@/components/artifacts/views/DiagramsView'
 import { BacklogView } from '@/components/artifacts/views/BacklogView'
 import type { ArtifactType } from '@/lib/agents/types'
 import { PIPELINE_STEPS } from '@/lib/agents/types'
+import { AlertCircle } from 'lucide-react'
 
 interface Artifact {
   type: ArtifactType
@@ -77,14 +78,23 @@ export function ProjectDetailClient({ project }: { project: Project }) {
           {!activeArtifact || activeArtifact.status !== 'completed' ? (
             <div className="flex flex-col items-center justify-center h-64 gap-4">
               {artifactStatuses[active] === 'failed' ? (
-                <>
-                  <p className="text-sm" style={{ color: 'var(--danger)' }}>
-                    Generation failed for this artifact.
+                <div
+                  className="flex flex-col items-center justify-center h-64 gap-3 px-8 text-center"
+                >
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center"
+                    style={{ background: 'var(--danger-muted)' }}
+                  >
+                    <AlertCircle className="w-6 h-6" style={{ color: 'var(--danger)' }} />
+                  </div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                    Generation failed
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--foreground-tertiary)' }}>
-                    Click the retry button (↺) next to the artifact name in the sidebar.
+                  <p className="text-xs max-w-xs" style={{ color: 'var(--foreground-secondary)' }}>
+                    The LLM service was unavailable or the API quota was exceeded.
+                    Use the <strong>↺</strong> button next to the artifact name to retry.
                   </p>
-                </>
+                </div>
               ) : artifactStatuses[active] === 'generating' ? (
                 <p className="text-sm" style={{ color: 'var(--brand)' }}>
                   Generating...
