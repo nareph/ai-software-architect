@@ -1,4 +1,4 @@
-// src/app/[locale]/(app)/projects/[id]/page.tsx
+// src/app/[locale]/(project)/projects/[id]/page.tsx
 import { auth } from '@/lib/auth/config'
 import { db } from '@/lib/db'
 import { projects, artifacts } from '@/lib/db/schema'
@@ -32,10 +32,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     where: eq(artifacts.projectId, project.id),
   })
 
-  // S'assurer que les 5 types sont représentés même si pas encore générés
   const fullArtifacts = PIPELINE_STEPS.map(type => {
     const existing = projectArtifacts.find(a => a.type === type)
     return existing ?? {
+      id: `pending-${type}`,
       type,
       status: 'pending' as const,
       content: null,
@@ -51,10 +51,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         status: project.status as any,
         updatedAt: project.updatedAt,
         artifacts: fullArtifacts.map(a => ({
+          id: a.id,
           type: a.type as any,
           status: a.status as any,
           content: a.content,
-          coherenceScore: a.coherenceScore ? parseFloat(a.coherenceScore as any) : null,
+          coherenceScore: a.coherenceScore
+            ? parseFloat(a.coherenceScore as any)
+            : null,
         })),
       }}
     />

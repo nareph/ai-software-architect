@@ -4,8 +4,10 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
+import { AlertCircle } from 'lucide-react'
 import { ArtifactSidebar } from '@/components/artifacts/ArtifactSidebar'
 import { ProjectHeader } from '@/components/project/ProjectHeader'
+import { FeedbackPanel } from '@/components/feedback/FeedbackPanel'
 import { BusinessAnalysisView } from '@/components/artifacts/views/BusinessAnalysisView'
 import { ArchitectureView } from '@/components/artifacts/views/ArchitectureView'
 import { DatabaseSchemaView } from '@/components/artifacts/views/DatabaseSchemaView'
@@ -13,9 +15,9 @@ import { DiagramsView } from '@/components/artifacts/views/DiagramsView'
 import { BacklogView } from '@/components/artifacts/views/BacklogView'
 import type { ArtifactType } from '@/lib/agents/types'
 import { PIPELINE_STEPS } from '@/lib/agents/types'
-import { AlertCircle } from 'lucide-react'
 
 interface Artifact {
+  id: string
   type: ArtifactType
   status: 'pending' | 'generating' | 'completed' | 'failed'
   content: unknown
@@ -33,7 +35,10 @@ interface Project {
 export function ProjectDetailClient({ project }: { project: Project }) {
   const router = useRouter()
   const locale = useLocale()
+
   const [active, setActive] = useState<ArtifactType>('business_analysis')
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+
   const [artifactStatuses, setArtifactStatuses] = useState<
     Record<ArtifactType, Artifact['status']>
   >(
@@ -43,30 +48,49 @@ export function ProjectDetailClient({ project }: { project: Project }) {
     }, {} as Record<ArtifactType, Artifact['status']>)
   )
 
-  // When retry succeeds — update status and refresh page data
+  // Live artifact content — updated by feedback without full page reload
+  const [artifactContents, setArtifactContents] = useState<
+    Record<ArtifactType, unknown>
+  >(
+    project.artifacts.reduce((acc, a) => {
+      acc[a.type] = a.content
+      return acc
+    }, {} as Record<ArtifactType, unknown>)
+  )
+
   const handleRetrySuccess = useCallback((artifactType: ArtifactType) => {
     setArtifactStatuses(prev => ({ ...prev, [artifactType]: 'completed' }))
-    // Refresh server data to get the new artifact content
     router.refresh()
   }, [router])
+
+  const handleArtifactUpdated = useCallback((content: unknown) => {
+    setArtifactContents(prev => ({ ...prev, [active]: content }))
+  }, [active])
 
   const globalCoherence = project.artifacts.length > 0
     ? project.artifacts.reduce((sum, a) => sum + (a.coherenceScore ?? 0), 0) / project.artifacts.length
     : null
 
   const activeArtifact = project.artifacts.find(a => a.type === active)
+  const activeContent = artifactContents[active]
+  const activeStatus = artifactStatuses[active]
 
   return (
-    <div className="flex flex-1 min-h-screen">
+    <div className="flex flex-1 min-h-screen overflow-hidden">
       <ArtifactSidebar
         projectId={project.id}
         activeArtifact={active}
-        onSelect={setActive}
+        onSelect={(type) => {
+          setActive(type)
+          setFeedbackOpen(false)
+        }}
         artifactStatuses={artifactStatuses}
         onRetrySuccess={handleRetrySuccess}
+        onFeedbackOpen={() => setFeedbackOpen(true)}
+        isFeedbackOpen={feedbackOpen}
       />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <ProjectHeader
           name={project.name}
           status={project.status}
@@ -74,13 +98,14 @@ export function ProjectDetailClient({ project }: { project: Project }) {
           coherenceScore={globalCoherence}
         />
 
-        <div className="flex-1 overflow-y-auto px-7 py-6 max-w-6xl w-full mx-auto">
-          {!activeArtifact || activeArtifact.status !== 'completed' ? (
-            <div className="flex flex-col items-center justify-center h-64 gap-4">
-              {artifactStatuses[active] === 'failed' ? (
-                <div
-                  className="flex flex-col items-center justify-center h-64 gap-3 px-8 text-center"
-                >
+        <div
+          className="flex-1 overflow-y-auto px-7 py-6 w-full"
+          style={{ maxWidth: feedbackOpen ? '100%' : '1152px', margin: '0 auto' }}
+        >
+          {activeStatus !== 'completed' || !activeContent ? (
+            <div className="flex flex-col items-center justify-center h-64 gap-3 text-center px-8">
+              {activeStatus === 'failed' ? (
+                <>
                   <div
                     className="w-12 h-12 rounded-xl flex items-center justify-center"
                     style={{ background: 'var(--danger-muted)' }}
@@ -92,24 +117,32 @@ export function ProjectDetailClient({ project }: { project: Project }) {
                   </p>
                   <p className="text-xs max-w-xs" style={{ color: 'var(--foreground-secondary)' }}>
                     The LLM service was unavailable or the API quota was exceeded.
-                    Use the <strong>↺</strong> button next to the artifact name to retry.
+                    Click the <strong>↺</strong> button next to the artifact name to retry.
                   </p>
-                </div>
-              ) : artifactStatuses[active] === 'generating' ? (
-                <p className="text-sm" style={{ color: 'var(--brand)' }}>
-                  Generating...
-                </p>
+                </>
+              ) : activeStatus === 'generating' ? (
+                <p className="text-sm" style={{ color: 'var(--brand)' }}>Generating...</p>
               ) : (
-                <p className="text-sm" style={{ color: 'var(--foreground-tertiary)' }}>
-                  Not yet generated.
-                </p>
+                <p className="text-sm" style={{ color: 'var(--foreground-tertiary)' }}>Not yet generated.</p>
               )}
             </div>
           ) : (
-            <ArtifactRenderer type={active} content={activeArtifact.content} />
+            <ArtifactRenderer type={active} content={activeContent} />
           )}
         </div>
       </div>
+
+      {/* Feedback Panel */}
+      {activeArtifact && activeStatus === 'completed' && (
+        <FeedbackPanel
+          projectId={project.id}
+          artifactId={activeArtifact.id}
+          artifactType={active}
+          isOpen={feedbackOpen}
+          onClose={() => setFeedbackOpen(false)}
+          onArtifactUpdated={handleArtifactUpdated}
+        />
+      )}
     </div>
   )
 }

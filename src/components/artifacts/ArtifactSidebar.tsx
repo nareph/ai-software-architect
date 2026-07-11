@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import {
   ClipboardList, Layers, Database, Workflow, ListChecks,
-  Check, Loader2, AlertCircle, Download, MessageCircle, RefreshCw,
+  Check, Loader2, AlertCircle, MessageCircle, RefreshCw,
 } from 'lucide-react'
 import { ExportMenu } from '@/components/export/ExportMenu'
 import type { ArtifactType } from '@/lib/agents/types'
@@ -17,6 +17,8 @@ interface ArtifactSidebarProps {
   onSelect: (type: ArtifactType) => void
   artifactStatuses: Record<ArtifactType, 'pending' | 'generating' | 'completed' | 'failed'>
   onRetrySuccess?: (artifactType: ArtifactType) => void
+  onFeedbackOpen?: () => void
+  isFeedbackOpen?: boolean
 }
 
 const artifactIcons: Record<ArtifactType, React.ElementType> = {
@@ -33,10 +35,11 @@ export function ArtifactSidebar({
   onSelect,
   artifactStatuses,
   onRetrySuccess,
+  onFeedbackOpen,
+  isFeedbackOpen,
 }: ArtifactSidebarProps) {
   const t = useTranslations('generation.steps')
   const tCommon = useTranslations('common')
-
   const [retrying, setRetrying] = useState<ArtifactType | null>(null)
   const [retryError, setRetryError] = useState<string | null>(null)
 
@@ -51,12 +54,11 @@ export function ArtifactSidebar({
         body: JSON.stringify({ artifactType }),
       })
 
-      if (!res.ok || !res.body) {
-        throw new Error('Failed to start retry')
-      }
+      if (!res.ok || !res.body) throw new Error('Failed to start retry')
 
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
+      let eventName = ''
 
       while (true) {
         const { done, value } = await reader.read()
@@ -64,8 +66,6 @@ export function ArtifactSidebar({
 
         const text = decoder.decode(value)
         const lines = text.split('\n')
-
-        let eventName = ''
 
         for (const line of lines) {
           if (line.startsWith('event: ')) {
@@ -78,21 +78,20 @@ export function ArtifactSidebar({
                 onRetrySuccess?.(artifactType)
               }
               if (eventName === 'retry_failed') {
-                // Parse le vrai message d'erreur
-                const errorMsg = data.error ?? 'Unknown error'
-                if (errorMsg.includes('503') || errorMsg.includes('UNAVAILABLE')) {
-                  throw new Error('LLM service temporarily unavailable. Please try again in a few minutes.')
+                const msg = data.error ?? 'Retry failed'
+                if (msg.includes('503') || msg.includes('UNAVAILABLE')) {
+                  throw new Error('LLM temporarily unavailable. Try again in a few minutes.')
                 }
-                if (errorMsg.includes('429') || errorMsg.includes('quota')) {
-                  throw new Error('API quota exceeded. Please try again later or check your billing.')
+                if (msg.includes('429') || msg.includes('quota')) {
+                  throw new Error('API quota exceeded. Try again later.')
                 }
-                if (errorMsg.includes('402') || errorMsg.includes('Insufficient Balance')) {
-                  throw new Error('DeepSeek account balance insufficient. Please recharge your account.')
+                if (msg.includes('402')) {
+                  throw new Error('API balance insufficient. Please recharge.')
                 }
-                throw new Error(errorMsg)
+                throw new Error(msg)
               }
             } catch (e) {
-              if (e instanceof Error && e.message !== 'retry_failed') throw e
+              if (e instanceof Error) throw e
             }
             eventName = ''
           }
@@ -105,8 +104,8 @@ export function ArtifactSidebar({
     }
   }
 
-  const hasFailedArtifacts = PIPELINE_STEPS.some(
-    t => artifactStatuses[t] === 'failed'
+  const hasCompletedArtifacts = PIPELINE_STEPS.some(
+    t => artifactStatuses[t] === 'completed'
   )
 
   return (
@@ -143,22 +142,12 @@ export function ArtifactSidebar({
                   style={{ color: active ? 'var(--brand)' : 'var(--foreground-secondary)' }}
                 />
                 <span className="flex-1 truncate text-xs">{t(type)}</span>
-
-                {isRetrying && (
-                  <Loader2 className="w-3.5 h-3.5 shrink-0 animate-spin" style={{ color: 'var(--brand)' }} />
-                )}
-                {!isRetrying && status === 'completed' && (
-                  <Check className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--success)' }} />
-                )}
-                {!isRetrying && status === 'generating' && (
-                  <Loader2 className="w-3.5 h-3.5 shrink-0 animate-spin" style={{ color: 'var(--brand)' }} />
-                )}
-                {!isRetrying && status === 'failed' && (
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--danger)' }} />
-                )}
+                {isRetrying && <Loader2 className="w-3.5 h-3.5 shrink-0 animate-spin" style={{ color: 'var(--brand)' }} />}
+                {!isRetrying && status === 'completed' && <Check className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--success)' }} />}
+                {!isRetrying && status === 'generating' && <Loader2 className="w-3.5 h-3.5 shrink-0 animate-spin" style={{ color: 'var(--brand)' }} />}
+                {!isRetrying && status === 'failed' && <AlertCircle className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--danger)' }} />}
               </button>
 
-              {/* Retry button — only for failed artifacts */}
               {status === 'failed' && !isRetrying && (
                 <button
                   onClick={() => handleRetry(type)}
@@ -174,7 +163,6 @@ export function ArtifactSidebar({
         })}
       </nav>
 
-      {/* Retry error */}
       {retryError && (
         <div
           className="mx-2 mt-2 p-2 rounded-lg text-xs"
@@ -184,28 +172,37 @@ export function ArtifactSidebar({
         </div>
       )}
 
-      {/* Export */}
+      {/* Bottom actions */}
       <div className="mt-auto pt-3 border-t flex flex-col gap-1" style={{ borderColor: 'var(--border)' }}>
-        <p
-          className="text-xs font-medium px-2.5 mb-1"
-          style={{ color: 'var(--foreground-tertiary)' }}
-        >
-          Export
-        </p>
-        <ExportMenu projectId={projectId} />
-      </div>
 
-      {/* Feedback — coming soon */}
-      <div className="pt-1">
+        {/* Feedback button */}
         <button
-          disabled
-          title={tCommon('comingSoon')}
-          className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium opacity-40 cursor-not-allowed w-full"
-          style={{ color: 'var(--foreground-secondary)' }}
+          onClick={onFeedbackOpen}
+          disabled={!hasCompletedArtifacts}
+          className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-colors w-full"
+          style={{
+            background: isFeedbackOpen ? 'var(--brand-muted)' : 'transparent',
+            color: isFeedbackOpen
+              ? 'var(--brand-muted-fg)'
+              : hasCompletedArtifacts
+              ? 'var(--foreground-secondary)'
+              : 'var(--foreground-tertiary)',
+            opacity: hasCompletedArtifacts ? 1 : 0.4,
+            cursor: hasCompletedArtifacts ? 'pointer' : 'not-allowed',
+          }}
+          title={hasCompletedArtifacts ? 'Open feedback panel' : 'Generate artifacts first'}
         >
           <MessageCircle className="w-4 h-4 shrink-0" />
-          Feedback
+          <span className="text-xs">Feedback</span>
         </button>
+
+        {/* Export */}
+        <div className="border-t pt-2 mt-1" style={{ borderColor: 'var(--border)' }}>
+          <p className="text-xs font-medium px-2.5 mb-1" style={{ color: 'var(--foreground-tertiary)' }}>
+            Export
+          </p>
+          <ExportMenu projectId={projectId} />
+        </div>
       </div>
     </div>
   )
