@@ -58,10 +58,30 @@ export function ProjectDetailClient({ project }: { project: Project }) {
     }, {} as Record<ArtifactType, unknown>)
   )
 
-  const handleRetrySuccess = useCallback((artifactType: ArtifactType) => {
+  const handleRetrySuccess = useCallback(async (artifactType: ArtifactType) => {
+    // Mettre à jour le statut immédiatement
     setArtifactStatuses(prev => ({ ...prev, [artifactType]: 'completed' }))
-    router.refresh()
-  }, [router])
+
+    // Trouver l'artifact id correspondant
+    const artifact = project.artifacts.find(a => a.type === artifactType)
+    if (!artifact || artifact.id.startsWith('pending-')) return
+
+    // Re-fetcher le contenu depuis l'API
+    try {
+      const res = await fetch(`/api/artifacts/${artifact.id}`)
+      if (res.ok) {
+        const json = await res.json()
+        setArtifactContents(prev => ({
+          ...prev,
+          [artifactType]: json.artifact.content,
+        }))
+      }
+    } catch (err) {
+      console.error('[handleRetrySuccess] Failed to fetch updated artifact:', err)
+      // Fallback: full page refresh
+      router.refresh()
+    }
+  }, [project.artifacts, router])
 
   const handleArtifactUpdated = useCallback((content: unknown) => {
     setArtifactContents(prev => ({ ...prev, [active]: content }))
