@@ -144,6 +144,11 @@
   "newProject": {
     "title": "Nouveau projet",
     "subtitle": "Décrivez votre idée — l'IA génère l'architecture complète.",
+    "language": {
+    "label": "Langue des artefacts générés",
+    "hint": "(défini une fois à la création)",
+    "description": "Tous les artefacts seront générés dans cette langue. Le feedback suivra automatiquement."
+    },
     "name": {
       "label": "Nom du projet",
       "required": "(requis)",

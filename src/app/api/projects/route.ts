@@ -1,3 +1,4 @@
+// src/app/api/projects/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth/config'
 import { db } from '@/lib/db'
@@ -6,9 +7,10 @@ import { eq, and, ne, count, sql } from 'drizzle-orm'
 import { z } from 'zod'
 
 const CreateProjectSchema = z.object({
-  name: z.string().min(1).max(80),
+  name:        z.string().min(1).max(80),
   description: z.string().min(1),
-  template: z.string().nullable().optional(),
+  locale:      z.enum(['fr', 'en']).default('en'),
+  template:    z.string().nullable().optional(),
   constraints: z.string().nullable().optional(),
 })
 
@@ -16,7 +18,7 @@ export async function GET(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json(
-      { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+      { error: { code: 'UNAUTHORIZED' } },
       { status: 401 }
     )
   }
@@ -24,24 +26,20 @@ export async function GET(req: NextRequest) {
   try {
     const rows = await db
       .select({
-        id: projects.id,
-        name: projects.name,
-        description: projects.description,
-        status: projects.status,
-        template: projects.template,
-        createdAt: projects.createdAt,
-        updatedAt: projects.updatedAt,
+        id:                 projects.id,
+        name:               projects.name,
+        description:        projects.description,
+        status:             projects.status,
+        template:           projects.template,
+        locale:             projects.locale,
+        createdAt:          projects.createdAt,
+        updatedAt:          projects.updatedAt,
         artifactsCompleted: sql<number>`count(case when ${artifacts.status} = 'completed' then 1 end)::int`,
-        artifactsTotal: sql<number>`count(${artifacts.id})::int`,
+        artifactsTotal:     sql<number>`count(${artifacts.id})::int`,
       })
       .from(projects)
       .leftJoin(artifacts, eq(artifacts.projectId, projects.id))
-      .where(
-        and(
-          eq(projects.userId, session.user.id),
-          ne(projects.status, 'archived')
-        )
-      )
+      .where(and(eq(projects.userId, session.user.id), ne(projects.status, 'archived')))
       .groupBy(projects.id)
       .orderBy(sql`${projects.updatedAt} desc`)
 
@@ -59,15 +57,13 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json(
-      { error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+      { error: { code: 'UNAUTHORIZED' } },
       { status: 401 }
     )
   }
 
   let body: unknown
-  try {
-    body = await req.json()
-  } catch {
+  try { body = await req.json() } catch {
     return NextResponse.json(
       { error: { code: 'VALIDATION_ERROR', message: 'Invalid JSON body' } },
       { status: 400 }
@@ -77,33 +73,23 @@ export async function POST(req: NextRequest) {
   const parsed = CreateProjectSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json(
-      { error: { code: 'VALIDATION_ERROR', message: 'Invalid request data', details: parsed.error.flatten() } },
+      { error: { code: 'VALIDATION_ERROR', details: parsed.error.flatten() } },
       { status: 400 }
     )
   }
 
-  const { name, description, template, constraints } = parsed.data
+  const { name, description, locale, template, constraints } = parsed.data
 
-  // Check plan limits (free = max 10 projects)
+  // Check plan limit
   try {
     const [{ value: projectCount }] = await db
       .select({ value: count() })
       .from(projects)
-      .where(
-        and(
-          eq(projects.userId, session.user.id),
-          ne(projects.status, 'archived')
-        )
-      )
+      .where(and(eq(projects.userId, session.user.id), ne(projects.status, 'archived')))
 
     if (Number(projectCount) >= 10) {
       return NextResponse.json(
-        {
-          error: {
-            code: 'PLAN_LIMIT_REACHED',
-            message: 'You have reached the maximum of 10 projects on the free plan.',
-          },
-        },
+        { error: { code: 'PLAN_LIMIT_REACHED', message: 'Maximum 10 projects on free plan.' } },
         { status: 403 }
       )
     }
@@ -115,21 +101,18 @@ export async function POST(req: NextRequest) {
     const [project] = await db
       .insert(projects)
       .values({
-        userId: session.user.id,
-        name: name.trim(),
+        userId:      session.user.id,
+        name:        name.trim(),
         description,
-        template: template ?? null,
+        locale,
+        template:    template ?? null,
         constraints: constraints ?? null,
-        status: 'draft',
+        status:      'draft',
       })
       .returning()
 
     const artifactTypes = [
-      'business_analysis',
-      'architecture',
-      'database_schema',
-      'diagrams',
-      'backlog',
+      'business_analysis', 'architecture', 'database_schema', 'diagrams', 'backlog',
     ] as const
 
     await db.insert(artifacts).values(

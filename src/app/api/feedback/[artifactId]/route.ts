@@ -1,5 +1,5 @@
 // src/app/api/feedback/[artifactId]/route.ts
-// Feedback sur un artefact — modification ou explication via LLM
+// Lit la locale depuis le projet en DB — cohérence garantie avec la génération
 
 import { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth/config'
@@ -8,13 +8,12 @@ import { artifacts, artifactVersions, projects, feedbacks } from '@/lib/db/schem
 import { eq, and } from 'drizzle-orm'
 import { getLLMClient } from '@/lib/llm/client'
 import { getLanguageInstruction } from '@/lib/prompts/config'
-import { validateCoherence } from '@/lib/agents/coherence-validator'
 import { z } from 'zod'
 
 const FeedbackSchema = z.object({
   message: z.string().min(1).max(2000),
-  mode: z.enum(['modify', 'explain']).default('modify'),
-  locale: z.enum(['fr', 'en']).default('en'),
+  mode:    z.enum(['modify', 'explain']).default('modify'),
+  // locale retiré — on lit depuis le projet en DB
 })
 
 function sseMessage(event: string, data: unknown): string {
@@ -27,33 +26,25 @@ function buildModifyPrompt(
   userMessage: string,
   locale: string
 ): { system: string; user: string } {
-  const langInstruction = getLanguageInstruction(locale)
+  return {
+    system: `You are an expert software architect. You are helping a user refine a specific artifact from a software architecture document.
 
-  const system = `You are an expert software architect and technical analyst. You are helping a user refine a specific artifact from a software architecture document.
+${getLanguageInstruction(locale)}
 
-${langInstruction}
+Apply the user's requested modification to the artifact and return the COMPLETE updated artifact in the EXACT SAME JSON structure. Return ONLY valid JSON, no markdown, no preamble.`,
 
-Your task is to apply the user's requested modification to the artifact and return the COMPLETE updated artifact in the EXACT SAME JSON structure as the input. Do not change the structure — only update the relevant content.
+    user: `ARTIFACT TYPE: ${artifactType}
 
-RULES:
-- Return ONLY valid JSON, no markdown, no preamble, no explanation
-- Preserve ALL existing content that the user did not ask to change
-- Apply ONLY the modifications the user explicitly requested
-- The output must be complete — not a diff or partial update`
-
-  const user = `ARTIFACT TYPE: ${artifactType}
-
-CURRENT ARTIFACT CONTENT:
+CURRENT ARTIFACT:
 ${JSON.stringify(currentContent, null, 2)}
 
-USER MODIFICATION REQUEST:
+USER REQUEST:
 """
 ${userMessage}
 """
 
-Apply the requested modification and return the complete updated artifact JSON.`
-
-  return { system, user }
+Return the complete updated artifact JSON.`,
+  }
 }
 
 function buildExplainPrompt(
@@ -62,29 +53,23 @@ function buildExplainPrompt(
   userMessage: string,
   locale: string
 ): { system: string; user: string } {
-  const langInstruction = getLanguageInstruction(locale)
+  return {
+    system: `You are an expert software architect helping a user understand their architecture document.
 
-  const system = `You are an expert software architect and technical analyst. You are helping a user understand a specific artifact from a software architecture document.
+${getLanguageInstruction(locale)}
 
-${langInstruction}
+Answer the user's question clearly and concisely (100-300 words). Respond in plain text.`,
 
-Your task is to answer the user's question about this artifact in a clear, concise, and informative way. Focus on practical explanations that help the user understand the reasoning and implications of the architectural decisions.
+    user: `ARTIFACT TYPE: ${artifactType}
 
-Respond in plain text (no JSON). Be thorough but concise — aim for 100-300 words.`
-
-  const user = `ARTIFACT TYPE: ${artifactType}
-
-ARTIFACT CONTENT:
+ARTIFACT:
 ${JSON.stringify(currentContent, null, 2)}
 
-USER QUESTION:
+QUESTION:
 """
 ${userMessage}
-"""
-
-Please explain or answer the user's question about this artifact.`
-
-  return { system, user }
+"""`,
+  }
 }
 
 export async function POST(
@@ -108,18 +93,16 @@ export async function POST(
     return new Response('Invalid request', { status: 400 })
   }
 
-  const { message, mode, locale } = parsed.data
+  const { message, mode } = parsed.data
 
-  // Fetch artifact + verify ownership
+  // Fetch artifact
   const artifact = await db.query.artifacts.findFirst({
     where: eq(artifacts.id, artifactId),
   })
 
-  if (!artifact || !artifact.content) {
-    return new Response('Artifact not found', { status: 404 })
-  }
+  if (!artifact?.content) return new Response('Artifact not found', { status: 404 })
 
-  // Verify project ownership
+  // Verify ownership + get project locale
   const project = await db.query.projects.findFirst({
     where: and(
       eq(projects.id, artifact.projectId),
@@ -128,6 +111,9 @@ export async function POST(
   })
 
   if (!project) return new Response('Forbidden', { status: 403 })
+
+  // Use project locale — not from request headers or body
+  const locale = (project.locale ?? 'en') as string
 
   const encoder = new TextEncoder()
 
@@ -138,18 +124,12 @@ export async function POST(
       }
 
       try {
-        emit('feedback_started', { artifactId, mode })
+        emit('feedback_started', { artifactId, mode, locale })
 
         const client = getLLMClient()
 
         if (mode === 'explain') {
-          // ── Explanation mode — returns plain text ─────────────────────────
-          const { system, user } = buildExplainPrompt(
-            artifact.type,
-            artifact.content,
-            message,
-            locale
-          )
+          const { system, user } = buildExplainPrompt(artifact.type, artifact.content, message, locale)
 
           const response = await client.callWithRetry({
             messages: [
@@ -160,7 +140,6 @@ export async function POST(
             maxTokens: 1024,
           })
 
-          // Save feedback record
           await db.insert(feedbacks).values({
             artifactId: artifact.id,
             userId: session.user.id,
@@ -169,19 +148,10 @@ export async function POST(
             response: response.content,
           })
 
-          emit('explanation_ready', {
-            artifactId,
-            explanation: response.content,
-          })
+          emit('explanation_ready', { artifactId, explanation: response.content })
 
         } else {
-          // ── Modify mode — returns updated artifact JSON ───────────────────
-          const { system, user } = buildModifyPrompt(
-            artifact.type,
-            artifact.content,
-            message,
-            locale
-          )
+          const { system, user } = buildModifyPrompt(artifact.type, artifact.content, message, locale)
 
           const updatedContent = await client.callJSON<unknown>({
             messages: [
@@ -193,13 +163,11 @@ export async function POST(
             responseFormat: 'json',
           })
 
-          // Get current versions count
           const versions = await db.query.artifactVersions.findMany({
             where: (av, { eq }) => eq(av.artifactId, artifact.id),
           })
           const nextVersion = versions.length + 1
 
-          // Save new version
           await db.insert(artifactVersions).values({
             artifactId: artifact.id,
             versionNumber: nextVersion,
@@ -208,15 +176,10 @@ export async function POST(
             triggerInput: message,
           })
 
-          // Update artifact
           await db.update(artifacts)
-            .set({
-              content: updatedContent as any,
-              updatedAt: new Date(),
-            })
+            .set({ content: updatedContent as any, updatedAt: new Date() })
             .where(eq(artifacts.id, artifact.id))
 
-          // Save feedback record
           await db.insert(feedbacks).values({
             artifactId: artifact.id,
             userId: session.user.id,
@@ -225,29 +188,21 @@ export async function POST(
             response: 'Artifact updated successfully',
           })
 
-          emit('artifact_updated', {
-            artifactId,
-            content: updatedContent,
-            versionNumber: nextVersion,
-          })
+          emit('artifact_updated', { artifactId, content: updatedContent, versionNumber: nextVersion })
         }
 
         emit('feedback_completed', { artifactId, mode })
 
       } catch (error) {
-        console.error('[Feedback] Error:', error)
-        const errorMsg = (error as Error).message
-
-        let userMessage = 'An error occurred. Please try again.'
-        if (errorMsg.includes('503') || errorMsg.includes('UNAVAILABLE')) {
-          userMessage = 'LLM service temporarily unavailable. Please try again in a few minutes.'
-        } else if (errorMsg.includes('429') || errorMsg.includes('quota')) {
-          userMessage = 'API quota exceeded. Please try again later.'
-        } else if (errorMsg.includes('402')) {
-          userMessage = 'API balance insufficient. Please recharge your account.'
+        console.error('[Feedback]', error)
+        const msg = (error as Error).message
+        let userMsg = 'An error occurred. Please try again.'
+        if (msg.includes('503') || msg.includes('UNAVAILABLE')) {
+          userMsg = 'LLM service temporarily unavailable. Please try again in a few minutes.'
+        } else if (msg.includes('402')) {
+          userMsg = 'API balance insufficient. Please recharge your account.'
         }
-
-        emit('feedback_error', { artifactId, error: userMessage })
+        emit('feedback_error', { artifactId, error: userMsg })
       } finally {
         controller.close()
       }

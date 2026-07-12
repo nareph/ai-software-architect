@@ -32,6 +32,7 @@ export default function NewProjectPage() {
       .string()
       .min(1)
       .refine(val => countWords(val) >= 50, t('description.tooShort', { min: 50 })),
+    locale: z.enum(['fr', 'en']),
     template: z.string().optional(),
     constraints: z.string().max(500).optional(),
   })
@@ -39,7 +40,13 @@ export default function NewProjectPage() {
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', description: '', template: '', constraints: '' },
+    defaultValues: {
+      name: '',
+      description: '',
+      locale: locale as 'fr' | 'en',
+      template: '',
+      constraints: '',
+    },
   })
 
   const description = form.watch('description')
@@ -59,6 +66,7 @@ export default function NewProjectPage() {
         body: JSON.stringify({
           name: data.name,
           description: data.description,
+          locale: data.locale,
           template: data.template || null,
           constraints: data.constraints || null,
         }),
@@ -80,7 +88,6 @@ export default function NewProjectPage() {
       }
 
       router.push(`/${locale}/projects/${json.project.id}/generate`)
-
     } catch {
       setServerError(t('errors.serverError'))
     } finally {
@@ -93,12 +100,7 @@ export default function NewProjectPage() {
 
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.push(`/${locale}/dashboard`)}
-          aria-label="Back"
-        >
+        <Button variant="ghost" size="icon" onClick={() => router.push(`/${locale}/dashboard`)}>
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div>
@@ -133,17 +135,51 @@ export default function NewProjectPage() {
                 aria-invalid={fieldState.invalid}
               />
               <div className="flex justify-between mt-1">
-                {fieldState.invalid
-                  ? <FieldError errors={[fieldState.error]} />
-                  : <span />
-                }
-                <span
-                  className="text-xs tabular-nums"
-                  style={{ color: (field.value?.length ?? 0) > 65 ? 'var(--warning)' : 'var(--foreground-tertiary)' }}
-                >
+                {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : <span />}
+                <span className="text-xs tabular-nums" style={{ color: (field.value?.length ?? 0) > 65 ? 'var(--warning)' : 'var(--foreground-tertiary)' }}>
                   {field.value?.length ?? 0}/80
                 </span>
               </div>
+            </Field>
+          )}
+        />
+
+        {/* Content language */}
+        <Controller
+          name="locale"
+          control={form.control}
+          render={({ field }) => (
+            <Field>
+              <FieldLabel>
+                {t('language.label')}
+                <span className="ml-1 text-xs font-normal" style={{ color: 'var(--foreground-tertiary)' }}>
+                  {t('language.hint')}
+                </span>
+              </FieldLabel>
+              <div className="flex gap-3 mt-1">
+                {[
+                  { value: 'en', flag: '🇬🇧', label: 'English' },
+                  { value: 'fr', flag: '🇫🇷', label: 'Français' },
+                ].map(({ value, flag, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => field.onChange(value)}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all"
+                    style={{
+                      background: field.value === value ? 'var(--brand-muted)' : 'var(--surface)',
+                      borderColor: field.value === value ? 'var(--brand)' : 'var(--border)',
+                      color: field.value === value ? 'var(--brand-muted-fg)' : 'var(--foreground)',
+                    }}
+                  >
+                    <span className="text-lg">{flag}</span>
+                    <span className="text-sm font-medium">{label}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs mt-2" style={{ color: 'var(--foreground-tertiary)' }}>
+                {t('language.description')}
+              </p>
             </Field>
           )}
         />
@@ -160,7 +196,6 @@ export default function NewProjectPage() {
                   {t('description.required')}
                 </span>
               </FieldLabel>
-
               <textarea
                 {...field}
                 id="description"
@@ -175,8 +210,6 @@ export default function NewProjectPage() {
                 } as React.CSSProperties}
                 aria-invalid={fieldState.invalid}
               />
-
-              {/* Word counter */}
               <div className="flex items-center justify-between mt-2">
                 <div className="flex items-center gap-2 flex-1">
                   <div className="h-1 flex-1 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
@@ -188,15 +221,11 @@ export default function NewProjectPage() {
                       }}
                     />
                   </div>
-                  <span
-                    className="text-xs shrink-0 tabular-nums"
-                    style={{ color: wordOk ? 'var(--success)' : 'var(--foreground-tertiary)' }}
-                  >
+                  <span className="text-xs shrink-0 tabular-nums" style={{ color: wordOk ? 'var(--success)' : 'var(--foreground-tertiary)' }}>
                     {t('description.wordCount', { count: wordCount, target: wordTarget })}
                   </span>
                 </div>
               </div>
-
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
@@ -233,10 +262,7 @@ export default function NewProjectPage() {
                       <span className="text-xs font-medium capitalize">
                         {key === '' ? t('template.none') : key}
                       </span>
-                      <span
-                        className="text-xs mt-0.5"
-                        style={{ color: selected ? 'var(--brand)' : 'var(--foreground-tertiary)' }}
-                      >
+                      <span className="text-xs mt-0.5" style={{ color: selected ? 'var(--brand)' : 'var(--foreground-tertiary)' }}>
                         {desc}
                       </span>
                     </button>
@@ -273,10 +299,7 @@ export default function NewProjectPage() {
               />
               <div className="flex justify-between mt-1">
                 {fieldState.invalid ? <FieldError errors={[fieldState.error]} /> : <span />}
-                <span
-                  className="text-xs tabular-nums"
-                  style={{ color: (field.value?.length ?? 0) > 450 ? 'var(--warning)' : 'var(--foreground-tertiary)' }}
-                >
+                <span className="text-xs tabular-nums" style={{ color: (field.value?.length ?? 0) > 450 ? 'var(--warning)' : 'var(--foreground-tertiary)' }}>
                   {t('constraints.maxChars', { count: field.value?.length ?? 0 })}
                 </span>
               </div>
@@ -284,7 +307,6 @@ export default function NewProjectPage() {
           )}
         />
 
-        {/* Server error */}
         {serverError && (
           <div
             className="flex items-start gap-3 p-4 rounded-xl border"
@@ -295,7 +317,6 @@ export default function NewProjectPage() {
           </div>
         )}
 
-        {/* Submit */}
         <div className="flex items-center justify-between pt-2">
           <p className="text-xs" style={{ color: 'var(--foreground-tertiary)' }}>
             {t('submit.estimatedTime')}

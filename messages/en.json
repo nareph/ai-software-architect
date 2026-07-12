@@ -144,6 +144,11 @@
   "newProject": {
     "title": "New project",
     "subtitle": "Describe your idea — AI generates the complete architecture.",
+    "language": {
+     "label": "Language of generated artifacts",
+     "hint": "(set once at creation)",
+     "description": "All artifacts will be generated in this language. Feedback will automatically follow the same language."
+    },
     "name": {
     "label": "Project name",
     "required": "(required)",
