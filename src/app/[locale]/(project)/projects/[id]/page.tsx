@@ -9,7 +9,7 @@ import { ProjectDetailClient } from './ProjectDetailClient'
 import { PIPELINE_STEPS } from '@/lib/agents/types'
 
 interface ProjectPageProps {
-  params: Promise<{ id: string; locale: string }>
+  params: Promise<{ id: string }>
 }
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
@@ -50,6 +50,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         name: project.name,
         status: project.status as any,
         updatedAt: project.updatedAt,
+        locale: project.locale ?? 'en',
         artifacts: fullArtifacts.map(a => ({
           id: a.id,
           type: a.type as any,

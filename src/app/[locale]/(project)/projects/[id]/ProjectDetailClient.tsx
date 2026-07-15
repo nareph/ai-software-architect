@@ -29,12 +29,12 @@ interface Project {
   name: string
   status: 'draft' | 'generating' | 'completed' | 'partial' | 'archived'
   updatedAt: Date
+  locale: string
   artifacts: Artifact[]
 }
 
 export function ProjectDetailClient({ project }: { project: Project }) {
   const router = useRouter()
-  const locale = useLocale()
 
   const [active, setActive] = useState<ArtifactType>('business_analysis')
   const [feedbackOpen, setFeedbackOpen] = useState(false)
@@ -48,7 +48,6 @@ export function ProjectDetailClient({ project }: { project: Project }) {
     }, {} as Record<ArtifactType, Artifact['status']>)
   )
 
-  // Live artifact content — updated by feedback without full page reload
   const [artifactContents, setArtifactContents] = useState<
     Record<ArtifactType, unknown>
   >(
@@ -58,15 +57,23 @@ export function ProjectDetailClient({ project }: { project: Project }) {
     }, {} as Record<ArtifactType, unknown>)
   )
 
+  // Track coherence scores per artifact
+  const [coherenceScores, setCoherenceScores] = useState<
+    Record<ArtifactType, number | null>
+  >(
+    project.artifacts.reduce((acc, a) => {
+      acc[a.type] = a.coherenceScore
+      return acc
+    }, {} as Record<ArtifactType, number | null>)
+  )
+
+  // Retry success — re-fetch content + update coherence
   const handleRetrySuccess = useCallback(async (artifactType: ArtifactType) => {
-    // Mettre à jour le statut immédiatement
     setArtifactStatuses(prev => ({ ...prev, [artifactType]: 'completed' }))
 
-    // Trouver l'artifact id correspondant
     const artifact = project.artifacts.find(a => a.type === artifactType)
     if (!artifact || artifact.id.startsWith('pending-')) return
 
-    // Re-fetcher le contenu depuis l'API
     try {
       const res = await fetch(`/api/artifacts/${artifact.id}`)
       if (res.ok) {
@@ -75,10 +82,14 @@ export function ProjectDetailClient({ project }: { project: Project }) {
           ...prev,
           [artifactType]: json.artifact.content,
         }))
+        if (json.artifact.coherenceScore !== null) {
+          setCoherenceScores(prev => ({
+            ...prev,
+            [artifactType]: parseFloat(json.artifact.coherenceScore),
+          }))
+        }
       }
-    } catch (err) {
-      console.error('[handleRetrySuccess] Failed to fetch updated artifact:', err)
-      // Fallback: full page refresh
+    } catch {
       router.refresh()
     }
   }, [project.artifacts, router])
@@ -87,8 +98,10 @@ export function ProjectDetailClient({ project }: { project: Project }) {
     setArtifactContents(prev => ({ ...prev, [active]: content }))
   }, [active])
 
-  const globalCoherence = project.artifacts.length > 0
-    ? project.artifacts.reduce((sum, a) => sum + (a.coherenceScore ?? 0), 0) / project.artifacts.length
+  // Compute global coherence from current scores
+  const scores = Object.values(coherenceScores).filter((s): s is number => s !== null)
+  const globalCoherence = scores.length > 0
+    ? scores.reduce((sum, s) => sum + s, 0) / scores.length
     : null
 
   const activeArtifact = project.artifacts.find(a => a.type === active)
@@ -120,7 +133,7 @@ export function ProjectDetailClient({ project }: { project: Project }) {
 
         <div
           className="flex-1 overflow-y-auto px-7 py-6 w-full"
-          style={{ maxWidth: feedbackOpen ? '100%' : '1152px', margin: '0 auto' }}
+          style={{ maxWidth: '1152px', margin: '0 auto' }}
         >
           {activeStatus !== 'completed' || !activeContent ? (
             <div className="flex flex-col items-center justify-center h-64 gap-3 text-center px-8">
@@ -136,7 +149,6 @@ export function ProjectDetailClient({ project }: { project: Project }) {
                     Generation failed
                   </p>
                   <p className="text-xs max-w-xs" style={{ color: 'var(--foreground-secondary)' }}>
-                    The LLM service was unavailable or the API quota was exceeded.
                     Click the <strong>↺</strong> button next to the artifact name to retry.
                   </p>
                 </>
@@ -152,12 +164,13 @@ export function ProjectDetailClient({ project }: { project: Project }) {
         </div>
       </div>
 
-      {/* Feedback Panel */}
+      {/* Feedback Panel — passes project locale */}
       {activeArtifact && activeStatus === 'completed' && (
         <FeedbackPanel
           projectId={project.id}
           artifactId={activeArtifact.id}
           artifactType={active}
+          projectLocale={project.locale as 'fr' | 'en'}
           isOpen={feedbackOpen}
           onClose={() => setFeedbackOpen(false)}
           onArtifactUpdated={handleArtifactUpdated}
