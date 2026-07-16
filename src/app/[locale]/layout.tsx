@@ -1,5 +1,4 @@
 // src/app/[locale]/layout.tsx
-// Layout principal — rend le <html> avec la bonne locale, ThemeProvider et next-intl
 
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'

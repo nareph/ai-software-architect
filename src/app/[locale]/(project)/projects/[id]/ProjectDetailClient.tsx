@@ -38,6 +38,7 @@ export function ProjectDetailClient({ project }: { project: Project }) {
 
   const [active, setActive] = useState<ArtifactType>('business_analysis')
   const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [projectStatus, setProjectStatus] = useState(project.status)
 
   const [artifactStatuses, setArtifactStatuses] = useState<
     Record<ArtifactType, Artifact['status']>
@@ -69,7 +70,16 @@ export function ProjectDetailClient({ project }: { project: Project }) {
 
   // Retry success — re-fetch content + update coherence
   const handleRetrySuccess = useCallback(async (artifactType: ArtifactType) => {
-    setArtifactStatuses(prev => ({ ...prev, [artifactType]: 'completed' }))
+    setArtifactStatuses(prev => {
+      const updated = { ...prev, [artifactType]: 'completed' as const }
+
+      const allDone = PIPELINE_STEPS.every(step => updated[step] === 'completed')
+      if (allDone) {
+        setProjectStatus('completed')
+      }
+
+      return updated
+    })
 
     const artifact = project.artifacts.find(a => a.type === artifactType)
     if (!artifact || artifact.id.startsWith('pending-')) return
@@ -126,7 +136,7 @@ export function ProjectDetailClient({ project }: { project: Project }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <ProjectHeader
           name={project.name}
-          status={project.status}
+          status={projectStatus}
           updatedAt={project.updatedAt}
           coherenceScore={globalCoherence}
         />
