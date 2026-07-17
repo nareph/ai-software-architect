@@ -1,8 +1,8 @@
-# AI Software Architect - Roadmap
+# Feuille de route
 
 ## Vision
 
-AI Software Architect est une plateforme d'ingénierie assistée par IA capable de transformer des besoins métier en artefacts techniques exploitables :
+AI Software Architect est une plateforme d'ingénierie propulsée par l'IA capable de transformer des exigences métier en artefacts techniques actionnables :
 
 * Analyse métier
 * User Stories
@@ -14,596 +14,180 @@ AI Software Architect est une plateforme d'ingénierie assistée par IA capable 
 * Plan DevOps
 * Estimation des coûts
 
-L'objectif n'est pas de générer du code.
-
-L'objectif est de générer les décisions d'architecture nécessaires avant le développement.
+L'objectif n'est pas de générer du code. L'objectif est de générer les **décisions d'architecture** nécessaires avant le développement.
 
 ---
 
-# Phase 0 — Research & Product Definition
+## Phase 0 — Recherche & Définition produit ✅
 
-## Livrables
-
-### docs/project-vision.md
-
-Définir :
-
-* Pourquoi le projet existe
-* Quel problème il résout
-* Qui sont les utilisateurs
-* Valeur proposée
+* Vision du projet
+* Analyse de marché
+* Personas
+* Énoncé du problème
 
 ---
 
-### docs/market-analysis.md
+## Phase 1 — Exigences produit ✅
 
-Étudier :
-
-* v0.dev
-* Bolt
-* Lovable
-* Devin
-* Cognition
-* Claude Code
-* Cursor
-* Replit Agent
-
-Questions :
-
-* Que font-ils ?
-* Que ne font-ils pas ?
-* Où se positionne AI Software Architect ?
+* Document d'exigences produit (PRD)
+* Cas d'usage
+* Parcours utilisateur
 
 ---
 
-### docs/personas.md
+## Phase 2 — Conception système ✅
 
-Définir :
-
-#### Startup Founder
-
-Besoin :
-
-Transformer une idée en architecture.
-
-#### Freelance Developer
-
-Besoin :
-
-Accélérer les phases d'analyse.
-
-#### Solution Architect
-
-Besoin :
-
-Automatiser la documentation.
-
-#### CTO
-
-Besoin :
-
-Standardiser les décisions techniques.
+* Architecture système
+* Modèle de domaine
+* Conception de base de données
+* Spécification API
+* Sécurité
 
 ---
 
-### docs/problem-statement.md
+## Phase 3 — Architecture IA ✅
 
-Document central.
-
-Décrire :
-
-Le coût de la phase d'architecture.
-
-Les erreurs fréquentes.
-
-Les limitations actuelles.
+* Vue d'ensemble de l'architecture IA
+* Système d'agents
+* Stratégie de prompts
+* Sélection des modèles
+* Framework d'évaluation
 
 ---
 
-# Phase 1 — Product Requirements
+## Phase 4 — MVP ✅
 
-## Livrables
+### Fonctionnalités réalisées
 
-### docs/prd.md
+**Auth & Utilisateurs**
+* Inscription et connexion email/mot de passe
+* Sessions JWT via NextAuth.js v5
+* Hashage sécurisé des mots de passe (bcrypt coût 12)
 
-Product Requirements Document.
+**Gestion des projets**
+* Formulaire de création de projet (nom, description, sélecteur de langue, template, contraintes)
+* Langue au niveau du projet (FR/EN, dissociée de la locale UI)
+* Suppression douce (archive) + suppression définitive via SQL
+* Dashboard avec vue grille/liste
 
-Décrire :
+**Pipeline de génération**
+* 5 agents IA séquentiels (Analyste métier, Architecte solution, Architecte DB, Générateur de diagrammes, Chef de projet)
+* Intégration LLM réelle : Gemini 3.5 Flash (primaire) + DeepSeek V4 Flash (fallback)
+* Retry automatique (max 2 tentatives par étape)
+* Streaming SSE de progression en temps réel
+* Pipeline mock pour le développement (USE_MOCK_GENERATION=true)
+* Retry d'artefact individuel en cas d'échec (bouton UI)
+* Réparation JSON pour les réponses LLM tronquées
 
-Fonctionnalités.
+**Validation de cohérence**
+* 5 règles pondérées : entities_db_coverage, features_stories_coverage, actors_backlog_coverage, modules_diagram_sync, db_stories_consistency
+* Score réel (0-1) remplaçant le placeholder aléatoire
+* Liste d'issues avec niveaux de sévérité (error, warning, info)
 
-Contraintes.
+**Visualisation des artefacts**
+* 5 vues typées : BusinessAnalysis, Architecture, DatabaseSchema, Diagrams, Backlog
+* Rendu Mermaid (thème adaptatif, clair/sombre)
+* User stories repliables dans la vue Backlog
 
-Objectifs.
+**Export**
+* Markdown (.md) — sortie structurée complète
+* JSON (.json) — structuré avec métadonnées
+* PDF (.pdf) — page de couverture + 5 pages d'artefacts (@react-pdf/renderer)
 
-KPIs.
+**Feedback / Chat**
+* Panel slide-in (style Notion AI)
+* Mode modifier : met à jour l'artefact + crée une nouvelle version en DB
+* Mode expliquer : répond aux questions sans modifier l'artefact
+* UI du panel dans la langue du projet (FR/EN), pas la langue de l'UI
+* Messages d'erreur LLM localisés
 
----
+**i18n**
+* Routage par URL (/fr/*, /en/*)
+* Sélecteur de langue dans la sidebar et la nav auth
+* Toutes les chaînes UI dans messages/fr.json et messages/en.json
+* Artefacts générés dans la langue du projet (indépendant de la locale UI)
 
-### docs/use-cases.md
+**Sécurité**
+* Rate limiting : 20 générations/heure, 30 exports/heure (Upstash Redis)
+* Sanitisation XSS sur la sortie LLM (rehype-sanitize)
+* RBAC : vérification de propriété des ressources sur toutes les routes API
 
-Cas d'utilisation détaillés.
-
-Exemple :
-
-Créer un SaaS de réservation.
-
-Créer un e-commerce.
-
-Créer une marketplace.
-
-Créer une application mobile.
-
----
-
-### docs/user-journey.md
-
-Décrire :
-
-Input utilisateur
-
-↓
-
-Analyse
-
-↓
-
-Génération
-
-↓
-
-Validation
-
-↓
-
-Export
-
----
-
-# Phase 2 — System Design
-
-## Livrables
-
-### docs/system-architecture.md
-
-Architecture globale.
-
-Frontend
-
-Backend
-
-Agents
-
-LLM Providers
-
-Storage
-
-Cache
-
-Observability
+**Documentation**
+* GitBook EN (primaire) : docs/
+* GitBook FR (variante) : docs_fr/
+* README.md (EN) à la racine du projet
 
 ---
 
-### docs/domain-model.md
+## Phase 5 — Fonctionnalités IA avancées ⬜
 
-Domain Driven Design.
+### Workflow multi-agents
 
-Entités :
+```
+Analyste métier
+      ↓
+  Architecte
+      ↓
+Expert base de données
+      ↓
+  Expert DevOps
+      ↓
+  Réviseur (Agent de revue d'architecture)
+```
 
-Project
-
-Requirement
-
-Architecture
-
-Diagram
-
-Backlog
-
-Decision
-
-Artifact
-
----
-
-### docs/database-design.md
-
-ERD complet.
-
-PostgreSQL.
-
-Tables.
-
-Relations.
-
-Indexes.
+### Fonctionnalités prévues
+* Agent de revue d'architecture (détection d'anti-patterns)
+* Estimation des coûts (AWS, Azure, GCP)
+* Recommandations technologiques basées sur le contexte
+* UI d'historique des versions (navigable)
+* Sous-agents parallèles pour les projets complexes
 
 ---
 
-### docs/api-specification.md
+## Phase 6 — Excellence technique ⬜
 
-API REST.
+### Tests
+* Unitaires
+* Intégration
+* E2E
+* Tests d'évaluation IA
 
-Endpoints.
+### Observabilité
+* OpenTelemetry
+* Logs, Métriques, Tracing
 
-Payloads.
-
-Responses.
-
-Auth.
-
----
-
-### docs/security.md
-
-Auth.
-
-RBAC.
-
-Rate limiting.
-
-Audit logs.
-
-Secrets.
-
-PII.
+### CI/CD
+* GitHub Actions
+* Docker
+* Terraform
 
 ---
 
-# Phase 3 — AI Architecture
+## Phase 7 — Assets portfolio ⬜
 
-## Livrables
-
-### docs/ai-architecture.md
-
-Architecture IA globale.
+* Vidéo de démonstration (10-15 min)
+* Articles de blog
+* Études de cas
 
 ---
 
-### docs/agent-system.md
+## Phase 8 — V2 ⬜
 
-Décrire tous les agents.
-
-#### Requirements Analyst
-
-Analyse métier.
-
----
-
-#### Solution Architect
-
-Architecture.
+* Modèle C4, UML, Diagrammes de séquence, Diagrammes d'infrastructure
+* Graphe de connaissances architecturales
+* RAG (documentation technique, RFCs, bonnes pratiques)
+* Intégration IDE (VS Code, Cursor, Claude Code)
+* Claude Sonnet 4.6 comme LLM primaire
 
 ---
 
-#### Database Architect
-
-Modélisation DB.
-
----
-
-#### DevOps Architect
-
-Infrastructure.
-
----
-
-#### Technical Writer
-
-Documentation.
-
----
-
-#### Project Manager
-
-Backlog.
-
----
-
-### docs/prompt-strategy.md
-
-Prompt templates.
-
-Guardrails.
-
-Output formats.
-
-Validation.
-
----
-
-### docs/model-selection.md
-
-Comparer :
-
-Claude
-
-GPT
-
-Gemini
-
-DeepSeek
-
-OpenRouter
-
-Choix final.
-
----
-
-### docs/evaluation-framework.md
-
-Comment mesurer la qualité des résultats ?
-
-Score :
-
-Architecture
-
-Cohérence
-
-Complétude
-
-Sécurité
-
-Scalabilité
-
----
-
-# Phase 4 — MVP
-
-## Fonctionnalités MVP
-
-### Input
-
-Description textuelle.
-
----
-
-### Output
-
-Business Analysis
-
-Architecture
-
-Database Schema
-
-Mermaid Diagrams
-
-Backlog
-
----
-
-### Export
-
-Markdown
-
-PDF
-
-JSON
-
----
-
-# Phase 5 — Advanced AI Features
-
-## Multi-Agent Workflow
-
-Requirements Analyst
-
-↓
-
-Architect
-
-↓
-
-Database Expert
-
-↓
-
-DevOps Expert
-
-↓
-
-Reviewer
-
----
-
-## Architecture Review
-
-Critique automatique.
-
-Détection :
-
-* anti-patterns
-* incohérences
-* risques
-
----
-
-## Cost Estimation
-
-AWS
-
-Azure
-
-GCP
-
----
-
-## Technology Recommendations
-
-Rust
-
-Node
-
-Go
-
-Python
-
-Java
-
-Selon le contexte.
-
----
-
-# Phase 6 — Engineering Excellence
-
-## Tests
-
-### Unit
-
-### Integration
-
-### E2E
-
-### AI Evaluation Tests
-
----
-
-## Observability
-
-OpenTelemetry
-
-Logs
-
-Metrics
-
-Tracing
-
----
-
-## CI/CD
-
-GitHub Actions
-
-Docker
-
-Terraform
-
-AWS
-
----
-
-# Phase 7 — Portfolio Assets
-
-## Démo Vidéo
-
-10 à 15 minutes.
-
-Montrer :
-
-Input
-
-↓
-
-Architecture générée
-
-↓
-
-Diagrammes
-
-↓
-
-Backlog
-
-↓
-
-Export
-
----
-
-## Blog Posts
-
-### Article 1
-
-Why Software Architecture Is The Next AI Frontier
-
----
-
-### Article 2
-
-Building A Multi-Agent Software Architect
-
----
-
-### Article 3
-
-From Requirements To Architecture Using AI
-
----
-
-## GitBook
-
-Créer :
-
-Introduction
-
-Vision
-
-Architecture
-
-Agents
-
-API
-
-Roadmap
-
-Examples
-
-Case Studies
-
----
-
-# Phase 8 — V2
-
-## Diagram Generation
-
-C4 Model
-
-UML
-
-Sequence Diagrams
-
-Infrastructure Diagrams
-
----
-
-## Architecture Knowledge Graph
-
-Stockage des décisions.
-
-Réutilisation des patterns.
-
----
-
-## RAG
-
-Documentation technique.
-
-RFCs.
-
-Best Practices.
-
-Architecture Patterns.
-
----
-
-## IDE Integration
-
-VS Code Extension.
-
-Cursor Integration.
-
-Claude Code Integration.
-
----
-
-
-# Success Criteria
-
-Le projet est réussi lorsque :
-
-* Une idée produit peut être transformée en architecture complète en moins de 5 minutes.
-* Les diagrammes sont exploitables.
-* Le backlog est cohérent.
-* Les recommandations techniques sont justifiées.
-* La documentation est automatiquement produite.
-* Un recruteur senior comprend immédiatement la valeur du projet après une démonstration de 3 minutes.
+## Critères de succès
+
+Le projet est réussi quand :
+
+* Une idée produit peut être transformée en architecture complète en moins de 5 minutes
+* Les diagrammes sont directement utilisables
+* Le backlog est cohérent
+* Les recommandations techniques sont justifiées
+* La documentation est produite automatiquement
+* Un recruteur senior comprend immédiatement la valeur du projet après une démo de 3 minutes
